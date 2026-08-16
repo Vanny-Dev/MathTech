@@ -1,0 +1,101 @@
+@import './variables.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Page surface: cream graph paper ──
+   Fine quadrille grid with a heavier line every 5 squares. */
+body {
+  font-family: var(--font-body);
+  font-weight: 600;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(rgba(26, 26, 46, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 46, 0.07) 1px, transparent 1px);
+  background-size:
+    var(--grid-sm) var(--grid-sm),
+    var(--grid-sm) var(--grid-sm),
+    var(--grid-lg) var(--grid-lg),
+    var(--grid-lg) var(--grid-lg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  font-weight: 400;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+}
+
+input, textarea, select {
+  font-family: var(--font-body);
+}
+
+/* Numbers and equations always read as math */
+code, kbd, samp, pre {
+  font-family: var(--font-math);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── Utility: graph paper surface ──
+   Same quadrille grid as the body, for scroll containers that paint
+   their own background and would otherwise hide it. */
+.graph-paper {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(rgba(26, 26, 46, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 46, 0.07) 1px, transparent 1px);
+  background-size:
+    var(--grid-sm) var(--grid-sm),
+    var(--grid-sm) var(--grid-sm),
+    var(--grid-lg) var(--grid-lg),
+    var(--grid-lg) var(--grid-lg);
+}
+
+/* ── Utility: monospace math notation ── */
+.mono {
+  font-family: var(--font-math);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ── Utility: tabular figures so stat columns line up ── */
+.tnum {
+  font-family: var(--font-math);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Spinner for refresh icons */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--paper-dark); }
+::-webkit-scrollbar-thumb { background: var(--board); }
+::-webkit-scrollbar-thumb:hover { background: var(--teal); }
+
+/* Mobile: clear the bottom nav bar */
+@media (max-width: 768px) {
+  main {
+    padding-bottom: 5rem;
+  }
+}

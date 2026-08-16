@@ -1,0 +1,41 @@
+:root {
+  /* ── Palette: chalkboard + graph paper ── */
+  --board:        #0B1D2E;  /* chalkboard dark — sidebar, headers */
+  --board-light:  #122840;  /* active nav, dividers */
+  --paper:        #F5F0E8;  /* graph paper cream — page background */
+  --paper-dark:   #EDE8DE;  /* table rows, subtle fills */
+  --white:        #FFFFFF;  /* card surface */
+  --ink:          #1A1A2E;  /* borders, shadows, body text */
+  --teal:         #4ECDC4;  /* primary accent */
+  --yellow:       #FFE66D;  /* highlight — best score, notice */
+  --red:          #FF6B6B;  /* error — wrong, not started */
+  --green:        #6BCB77;  /* success — correct, passed */
+  --muted:        #8899AA;  /* placeholders, secondary labels */
+  --muted-strong: #4A5A6A;  /* secondary body text on paper */
+  --grid-line:    #D4CFC5;  /* graph paper grid */
+
+  /* ── Soft tints (answer row backgrounds) ── */
+  --green-soft:   #E3F5E6;
+  --red-soft:     #FFE5E5;
+  --yellow-soft:  #FFF8DC;
+
+  /* ── Typography ── */
+  --font-display: 'Fredoka One', cursive;
+  --font-body:    'Nunito', sans-serif;
+  --font-math:    'JetBrains Mono', monospace;
+
+  /* ── Borders & hard comic shadows (no blur, no spread) ── */
+  --border:       3px solid var(--ink);
+  --border-thin:  2px solid var(--ink);
+  --shadow:       3px 3px 0 var(--ink);
+  --shadow-sm:    2px 2px 0 var(--ink);
+  --shadow-lg:    6px 6px 0 var(--ink);
+
+  /* ── Graph paper backgrounds ── */
+  --grid-sm: 12px;
+  --grid-lg: 60px;
+
+  /* ── Spacing ── */
+  --radius: 0px;  /* hard edges — pure comic */
+  --gap:    1rem;
+}
