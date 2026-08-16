@@ -28,6 +28,10 @@ export default function Navbar({ onToggleSidebar }) {
 
 const styles = {
   navbar: {
+    position: 'sticky',
+    top: 0,
+    // Above page content, but below the mobile sidebar (1200) and its overlay (1100)
+    zIndex: 900,
     minHeight: '56px',
     background: 'var(--white)',
     borderBottom: '3px solid var(--ink)',

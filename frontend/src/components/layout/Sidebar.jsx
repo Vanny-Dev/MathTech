@@ -58,7 +58,7 @@ export default function Sidebar({ isOpen, onClose, isMobile }) {
     <aside
       style={{
         ...styles.sidebar,
-        ...(isMobile ? styles.mobileSidebar : {}),
+        ...(isMobile ? styles.mobileSidebar : styles.desktopSidebar),
         ...(isOpen ? styles.sidebarOpen : styles.sidebarClosed),
         ...(isMobile && !isOpen ? styles.mobileHidden : {}),
       }}
@@ -131,6 +131,15 @@ const styles = {
     flexShrink: 0,
     transition: 'transform 0.2s ease',
     zIndex: 1200,
+  },
+  // Desktop: pin to the viewport so the nav and Logout stay put while the page
+  // scrolls. Without alignSelf the flex row would stretch the aside to the full
+  // content height, dragging Logout far below the fold on long lessons.
+  desktopSidebar: {
+    position: 'sticky',
+    top: 0,
+    height: '100vh',
+    alignSelf: 'flex-start',
   },
   mobileSidebar: {
     position: 'fixed',
@@ -226,6 +235,10 @@ const styles = {
     flexDirection: 'column',
     flex: 1,
     padding: '0.5rem 0',
+    // On short screens the nav itself scrolls, so Logout stays pinned at the
+    // bottom of the sidebar rather than being pushed out of view.
+    overflowY: 'auto',
+    minHeight: 0,
   },
   navItem: {
     display: 'flex',

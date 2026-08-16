@@ -48,7 +48,8 @@ const styles = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    overflow: 'hidden',
+    // No `overflow: hidden` here — an overflow ancestor clips position: sticky,
+    // which would stop the Navbar sticking to the top.
     minWidth: 0,
   },
   overlay: {
@@ -59,7 +60,8 @@ const styles = {
   },
   main: {
     flex: 1,
-    overflowY: 'auto',
+    // The page itself scrolls, not this element. An inner scroll container
+    // would give the sticky Navbar nothing to stick against.
     padding: 'clamp(1rem, 2.5vw, 1.5rem)',
     /* background comes from .graph-paper */
   },
