@@ -10,16 +10,16 @@ const seedTeacher = async () => {
     }
 
     await User.create({
-      fullname: 'Juan dela Cruz',
-      username: 'teacher01',
-      email:    'teacher01@mathtech.com',
-      password: 'Teacher@123',
+      fullname: 'Dorie Jean L. Justiniana',
+      username: 'doriejean',
+      email:    'doriejean@gmail.com',
+      password: 'jeandorie123',
       role:     'teacher',
     });
 
     console.log('🌱 Teacher account seeded successfully');
-    console.log('   Username : teacher01');
-    console.log('   Password : Teacher@123');
+    console.log('   Username : doriejean');
+    console.log('   Password : jeandorie123');
   } catch (err) {
     console.error('❌ Seeder error:', err.message);
   }
