@@ -45,10 +45,10 @@ export default function RegisterPage() {
           {error && <div style={styles.error}>{error}</div>}
 
           {[
-            { name: 'fullname', label: 'Full Name',   type: 'text',     placeholder: 'Juan dela Cruz' },
-            { name: 'username', label: 'Username',    type: 'text',     placeholder: 'juan123' },
-            { name: 'email',    label: 'Email',       type: 'email',    placeholder: 'juan@email.com' },
-            { name: 'password', label: 'Password',    type: 'password', placeholder: '••••••••' },
+            { name: 'fullname', label: 'Full Name',   type: 'text',     placeholder: 'Your full name' },
+            { name: 'username', label: 'Username',    type: 'text',     placeholder: 'Your username' },
+            { name: 'email',    label: 'Email',       type: 'email',    placeholder: 'Your email address' },
+            { name: 'password', label: 'Password',    type: 'password', placeholder: 'Your password' },
           ].map((field) => (
             <div key={field.name} style={styles.field}>
               <label style={styles.label}>{field.label}</label>
