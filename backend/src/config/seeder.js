@@ -2,7 +2,7 @@ import User from '../models/User.js';
 
 const seedTeacher = async () => {
   try {
-    const existing = await User.findOne({ username: 'teacher01' });
+    const existing = await User.findOne({ username: 'doriejean' });
 
     if (existing) {
       console.log('✅ Teacher account already exists — skipping seed');

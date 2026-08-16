@@ -228,6 +228,18 @@
   color: var(--muted);
 }
 
+/* A <select> is sized by its longest <option>. Inside a flex row the default
+   min-width:auto stops it shrinking below that, so a long module title pushes
+   the layout wider than a phone screen. These let it shrink and ellipsise. */
+select.math-input,
+select.comic-input {
+  min-width: 0;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 /* ── Section title — with equals-rule underline ── */
 .section-title {
   font-family: var(--font-display);

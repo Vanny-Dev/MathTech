@@ -69,7 +69,7 @@ export default function TeacherMonitor() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.2rem' }}>
         <select
           className="comic-input"
-          style={{ maxWidth: '320px' }}
+          style={{ flex: '1 1 200px', minWidth: 0, maxWidth: '320px' }}
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
         >

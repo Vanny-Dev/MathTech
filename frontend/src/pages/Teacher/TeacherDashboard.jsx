@@ -54,7 +54,7 @@ export default function TeacherDashboard() {
         <label style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1rem', letterSpacing: '1px' }}>Module:</label>
         <select
           className="comic-input"
-          style={{ maxWidth: '320px' }}
+          style={{ flex: '1 1 200px', minWidth: 0, maxWidth: '320px' }}
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
         >

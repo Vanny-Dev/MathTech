@@ -301,23 +301,45 @@ const gradedActivities = [
   },
 ];
 
+const buildActivities = (moduleId) => [
+  ...practiceActivities.map((a) => ({ ...a, isPractice: true,  points: 1, moduleId })),
+  ...gradedActivities.map((a)   => ({ ...a, isPractice: false, points: 1, moduleId })),
+];
+
 const seedWeek1 = async () => {
   try {
     const existing = await Module.findOne({ title: MODULE_TITLE });
 
+    // The module existing is not proof the content is complete: if a previous
+    // run created the module but failed on insertMany, the old check skipped
+    // forever and students saw a topic with zero questions. Verify the
+    // activities too, and repair rather than skip.
     if (existing) {
-      console.log('✅ Week 1 module already exists — skipping seed');
+      const count = await Activity.countDocuments({ moduleId: existing._id });
+      const expected = practiceActivities.length + gradedActivities.length;
+
+      if (count === expected) {
+        console.log('✅ Week 1 content already complete — skipping seed');
+        return;
+      }
+
+      console.warn(`⚠️  Week 1 module exists but has ${count}/${expected} activities — repairing`);
+      await Activity.deleteMany({ moduleId: existing._id });
+      await Activity.insertMany(buildActivities(existing._id));
+      console.log(`🌱 Week 1 activities repaired (${expected} items)`);
       return;
     }
 
     const module = await Module.create(moduleData);
 
-    const activities = [
-      ...practiceActivities.map((a) => ({ ...a, isPractice: true,  points: 1, moduleId: module._id })),
-      ...gradedActivities.map((a)   => ({ ...a, isPractice: false, points: 1, moduleId: module._id })),
-    ];
-
-    await Activity.insertMany(activities);
+    try {
+      await Activity.insertMany(buildActivities(module._id));
+    } catch (err) {
+      // Don't leave a module with no questions behind — undo it so the next
+      // boot retries cleanly instead of silently "skipping" a broken topic.
+      await Module.findByIdAndDelete(module._id);
+      throw err;
+    }
 
     console.log('🌱 Week 1 content seeded successfully');
     console.log(`   Module     : ${module.title}`);
