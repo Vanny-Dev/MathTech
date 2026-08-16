@@ -1,7 +1,9 @@
 import React from 'react';
+import CharacterImage from './CharacterImage.jsx';
 
 export default function ComicPanel({
   characterSrc,
+  characterName = '',      // key from the CHARS map, used for the fallback label
   characterSide = 'left',  // 'left' | 'right'
   speechContent,
   answerArea,
@@ -15,18 +17,8 @@ export default function ComicPanel({
       className={`comic-panel ${bg === 'halftone' ? 'bg-halftone' : ''}`}
       style={{ minHeight, flexDirection: isRight ? 'row-reverse' : 'row' }}
     >
-      {/* Character image */}
-      {characterSrc && (
-        <img
-          src={characterSrc}
-          alt="character"
-          style={{
-            height: '140px',
-            objectFit: 'contain',
-            flexShrink: 0,
-          }}
-        />
-      )}
+      {/* Character portrait — falls back to a placeholder if the art is missing */}
+      <CharacterImage src={characterSrc} name={characterName} height={140} />
 
       {/* Speech / answer area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

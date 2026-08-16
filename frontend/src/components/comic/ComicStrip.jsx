@@ -13,6 +13,7 @@ const CHARS = {
   light_thinking:  '/assets/characters/light_thinking.png',
   light_happy:     '/assets/characters/light_happy.png',
   light_sad:       '/assets/characters/light_sad.png',
+  teacher:         '/assets/characters/teacher.png',
 };
 
 export default function ComicStrip({ activity, onAnswered, readOnly = false, highlightCorrect = false }) {
@@ -33,21 +34,38 @@ export default function ComicStrip({ activity, onAnswered, readOnly = false, hig
     dispatch(setAnswer({ activityId: activity._id, answer: given }));
 
     if (onAnswered) {
-      const isCorrect = onAnswered(activity._id, given);
-      const res = isCorrect ? 'correct' : 'wrong';
-      setResult(res);
-      play(res);
+      // The verdict may be null/undefined, which means "do not reveal
+      // correctness here" — practice mode, or a graded quiz where the server
+      // grades only after the whole set is submitted. The client never has
+      // correctAnswer (the API strips it), so it genuinely cannot judge.
+      // Treating null as false would mark every answer wrong.
+      const verdict = onAnswered(activity._id, given);
+
+      if (verdict === null || verdict === undefined) {
+        setResult(null);
+      } else {
+        const res = verdict ? 'correct' : 'wrong';
+        setResult(res);
+        play(res);
+      }
     }
 
     setSubmitted(true);
   };
 
-  // Determine which character to show in panel 3 based on result
-  const reactionChar = result === 'correct'
-    ? CHARS[comic.correctCharacter]  || CHARS.dark_happy
+  // Resolve character KEYS (not just srcs) so a missing image can be labelled
+  const pick = (key, fallback) => (key && CHARS[key] ? key : fallback);
+
+  const askingKey   = pick(comic.askingCharacter,   'dark_idle');
+  const thinkingKey = pick(comic.thinkingCharacter, 'light_thinking');
+
+  // Which character reacts in panel 3 depends on the result
+  const reactionKey = result === 'correct'
+    ? pick(comic.correctCharacter, 'dark_happy')
     : result === 'wrong'
-    ? CHARS[comic.wrongCharacter]    || CHARS.dark_serious
-    : CHARS[comic.askingCharacter]   || CHARS.dark_idle;
+    ? pick(comic.wrongCharacter,   'dark_serious')
+    : askingKey;
+  const reactionChar = CHARS[reactionKey];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -56,7 +74,8 @@ export default function ComicStrip({ activity, onAnswered, readOnly = false, hig
         {/* Panel 1: Question */}
         <ComicPanel
           characterSide="right"
-          characterSrc={CHARS[comic.askingCharacter] || CHARS.dark_idle}
+          characterSrc={CHARS[askingKey]}
+          characterName={askingKey}
           speechContent={activity?.question}
           bg="halftone"
         />
@@ -64,7 +83,8 @@ export default function ComicStrip({ activity, onAnswered, readOnly = false, hig
         {/* Panel 2: Answer input */}
         <ComicPanel
           characterSide="left"
-          characterSrc={CHARS[comic.thinkingCharacter] || CHARS.light_thinking}
+          characterSrc={CHARS[thinkingKey]}
+          characterName={thinkingKey}
           speechContent="hmm..."
           answerArea={
             !readOnly ? (
@@ -89,12 +109,15 @@ export default function ComicStrip({ activity, onAnswered, readOnly = false, hig
         <ComicPanel
           characterSide="right"
           characterSrc={reactionChar}
+          characterName={reactionKey}
           speechContent={
-            submitted
-              ? result === 'correct'
-                ? 'Correct! Great job!'
-                : 'Hmm, not quite...'
-              : null
+            !submitted
+              ? null
+              : result === 'correct'
+              ? 'Correct! Great job!'
+              : result === 'wrong'
+              ? 'Hmm, not quite...'
+              : 'Answer saved! Keep going.'   // no verdict yet — graded on submit
           }
         />
       </div>

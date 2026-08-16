@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, BookText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SectionTitle from '../../components/shared/SectionTitle.jsx';
+import ComicDiscussion from '../../components/comic/ComicDiscussion.jsx';
 import { getLessonApi } from '../../api/moduleApi.js';
 import { useWorkbook } from '../../context/WorkbookContext.jsx';
 import useProgress from '../../hooks/useProgress.js';
@@ -26,13 +28,9 @@ export default function DiscussionPage() {
 
   return (
     <div style={{ width: '100%' }}>
-      <h1 className="section-title">Discussion</h1>
-      <div className="comic-card" style={{ maxWidth: '720px', marginBottom: '1.25rem', overflowWrap: 'anywhere' }}>
-        {lesson?.discussion
-          ? <div dangerouslySetInnerHTML={{ __html: lesson.discussion }}
-              style={{ fontFamily: 'Nunito, sans-serif', lineHeight: 1.8, fontSize: '0.98rem' }} />
-          : <p style={{ fontFamily: 'Nunito, sans-serif' }}>No discussion content yet.</p>
-        }
+      <SectionTitle icon={BookText} label="∫">Discussion</SectionTitle>
+      <div style={{ maxWidth: '720px', marginBottom: '1.25rem', overflowWrap: 'anywhere' }}>
+        <ComicDiscussion html={lesson?.discussion} />
       </div>
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
         <button className="btn btn-outline" style={{ flex: '1 1 140px', minWidth: 0 }} onClick={() => navigate('/lesson/concepts')}>Concepts <ArrowRight size={15} /></button>

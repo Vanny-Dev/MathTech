@@ -282,6 +282,168 @@ select.comic-input {
   text-transform: none;
 }
 
+/* ══ Comic discussion — lesson rendered as manga panels ══════ */
+.comic-discussion {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cd-panel {
+  border: var(--border);
+  box-shadow: var(--shadow);
+  background-color: var(--white);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-sm) var(--grid-sm);
+  overflow: hidden;
+}
+
+.cd-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.8rem;
+  background: var(--board);
+  border-bottom: var(--border);
+}
+
+.cd-panel-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--teal);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  font-family: var(--font-math);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.cd-panel-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  color: var(--paper);
+  min-width: 0;
+}
+
+.cd-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.9rem;
+}
+
+/* ── One line of dialogue ── */
+.cd-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  max-width: 92%;
+}
+
+.cd-line.cd-left  { align-self: flex-start; }
+.cd-line.cd-right { align-self: flex-end; flex-direction: row-reverse; }
+
+.cd-avatar {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.cd-avatar-img {
+  object-fit: cover;
+  background: var(--white);
+  padding: 0;
+}
+
+.cd-bubble {
+  position: relative;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  padding: 0.5rem 0.8rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  min-width: 0;
+}
+
+/* Bubble tail */
+.cd-bubble::before {
+  content: '';
+  position: absolute;
+  top: 11px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+}
+
+.cd-left .cd-bubble::before {
+  left: -9px;
+  border-right: 9px solid var(--cd-tail, var(--ink));
+}
+.cd-right .cd-bubble::before {
+  right: -9px;
+  border-left: 9px solid var(--cd-tail, var(--ink));
+}
+
+.cd-speaker {
+  display: block;
+  font-family: var(--font-math);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 0.15rem;
+  opacity: 0.85;
+}
+
+/* ── Narration / formula block inside a panel ── */
+.cd-note {
+  align-self: stretch;
+  background: var(--paper);
+  border: 2px dashed var(--muted);
+  padding: 0.55rem 0.8rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.cd-note p { margin: 0; }
+.cd-note p + p { margin-top: 0.4rem; }
+
+/* Centred formulas render in monospace so they read as maths */
+.cd-note p[style*="center"] {
+  font-family: var(--font-math);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.3rem 0;
+}
+
+.rich-text p:last-child { margin-bottom: 0; }
+
+@media (max-width: 560px) {
+  .cd-line { max-width: 100%; }
+  .cd-bubble { font-size: 0.88rem; }
+}
+
 /* ── Score ring ── */
 .score-ring-wrap {
   display: flex;
