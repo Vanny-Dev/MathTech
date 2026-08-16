@@ -1,0 +1,36 @@
+# Render Blueprint for the MathTech backend.
+#
+# Render reads this from the repo root. Using it keeps the build and start
+# commands in version control instead of hand-typed in the dashboard, which is
+# how `npm run dev` (nodemon — a devDependency, absent in production) ended up
+# as the start command and failed with exit status 127.
+#
+# The frontend is NOT here — it stays on Vercel.
+
+services:
+  - type: web
+    name: mathtech-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    # Must be `npm start` (node), never `npm run dev` (nodemon).
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Do NOT set PORT — Render injects it and server.js already reads
+      # process.env.PORT. Hard-coding it fails the health check.
+
+      # Set these in the Render dashboard, not here — they are secrets.
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+
+      # The Vercel frontend origin, e.g. https://mathtech-self.vercel.app
+      # No trailing slash. Comma-separated for more than one.
+      - key: CLIENT_URL
+        sync: false
