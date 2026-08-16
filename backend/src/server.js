@@ -3,7 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/database.js';
 import seedTeacher from './config/seeder.js';
-import seedWeek1 from './config/seedWeek1.js';
+import seedTopic1Week1 from './config/seedTopic1Week1.js';
+import seedTopic2Week1 from './config/seedTopic2Week1.js';
+import seedTopic3Week2 from './config/seedTopic3Week2.js';
+import seedTopic4Week2 from './config/seedTopic4Week2.js';
 import authRoutes     from './routes/authRoutes.js';
 import userRoutes     from './routes/userRoutes.js';
 import moduleRoutes   from './routes/moduleRoutes.js';
@@ -44,7 +47,10 @@ const corsOptions = {
 const startServer = async () => {
   await connectDB();
   await seedTeacher();
-  await seedWeek1();
+  await seedTopic1Week1();
+  await seedTopic2Week1();
+  await seedTopic3Week2();
+  await seedTopic4Week2();
 
   const app = express();
 
