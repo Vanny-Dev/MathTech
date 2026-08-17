@@ -25,7 +25,7 @@ export default function DeveloperPage() {
   const credits = [
     {
       icon: Code2,
-      role: 'System Developer',
+      role: 'Web App Developer',
       math: 'dev',
       name: developer || 'Jovanny De Leon',
       note: 'Built and maintains the MathTech workbook',
