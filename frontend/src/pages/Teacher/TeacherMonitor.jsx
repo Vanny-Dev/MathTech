@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Activity, RefreshCw, ArrowRight } from 'lucide-react';
 import SectionTitle from '../../components/shared/SectionTitle.jsx';
-import { SECTION_KEYS, SECTION_ICONS } from '../../components/shared/sectionIcons.js';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getModulesApi } from '../../api/moduleApi.js';
 import { getModuleProgressApi } from '../../api/teacherApi.js';
 import Loader from '../../components/shared/Loader.jsx';
 
-const SECTIONS = SECTION_KEYS;
 
 const STATUS_COLORS = {
   completed:   { bg: 'var(--green)', label: 'Completed' },
@@ -134,28 +132,8 @@ export default function TeacherMonitor() {
                     </div>
                   </div>
 
-                  {/* Section dots */}
-                  <div style={{ display: 'flex', gap: '0.3rem', flex: 1, flexWrap: 'wrap' }}>
-                    {SECTIONS.map((sec) => {
-                      const SecIcon = SECTION_ICONS[sec];
-                      const done = s.completedSections[sec];
-                      return (
-                        <div
-                          key={sec}
-                          title={sec}
-                          style={{
-                            width: '28px', height: '28px',
-                            background: done ? 'var(--green)' : 'var(--paper-dark)',
-                            color: done ? 'var(--ink)' : 'var(--muted)',
-                            border: '2px solid var(--ink)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          }}
-                        >
-                          <SecIcon size={14} strokeWidth={2.5} />
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {/* Pushes the score and Detail button to the right */}
+                  <div style={{ flex: 1, minWidth: 0 }} />
 
                   {/* Score */}
                   <div style={{ textAlign: 'right', minWidth: '80px' }}>

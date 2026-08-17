@@ -1,0 +1,208 @@
+===============================================================================
+                       MATHTECH - APPLICATION SUMMARY
+              A Digital Workbook for Senior High School Mathematics
+===============================================================================
+
+
+WHAT IT IS
+-------------------------------------------------------------------------------
+MathTech is a web-based digital workbook for Mathematics. Students read
+comic-style lessons and answer graded quizzes. Teachers schedule when each
+topic opens and monitor every student's progress in real time.
+
+Two kinds of users:
+  STUDENT  - reads lessons, answers practice and graded activities,
+             sees scores, explanations, and personal progress
+  TEACHER  - sets topic release dates and monitors class progress
+             (seeded account only; registration always creates a student)
+
+
+WHAT IT IS BUILT FROM
+-------------------------------------------------------------------------------
+MERN stack - MongoDB, Express, React, Node.js.
+
+  FRONTEND
+    React 18 .............. user interface
+    Vite 5 ................ build tool and dev server
+    React Router 6 ........ page routing with role-based guards
+    Redux Toolkit ......... quiz answers and module data
+    React Context ......... login state and selected topic
+    Axios ................. API calls (attaches the login token)
+    lucide-react .......... icons (no emojis used anywhere)
+    Plain CSS ............. no framework; CSS variables drive the theme
+
+  BACKEND
+    Node.js 18+ ........... runtime (ES modules)
+    Express 4 ............. REST API
+    MongoDB + Mongoose 8 .. database and schemas
+    JSON Web Token ........ login tokens, 7-day expiry
+    bcryptjs .............. password hashing
+    dotenv ................ environment configuration
+    cors .................. strict allow-list of permitted origins
+
+  HOSTING
+    Frontend .............. Vercel
+    Backend ............... Render
+    Database .............. MongoDB Atlas
+
+
+PROJECT STRUCTURE
+-------------------------------------------------------------------------------
+  DigitalWorkbookNavigation/
+    render.yaml ........... deployment settings for the API
+    overview.md ........... full technical documentation
+    summary.txt ........... this file
+
+    backend/src/
+      server.js ........... Express app, CORS, graceful shutdown
+      config/ ............. database connection and content seeders
+      models/ ............. User, Module, Activity, Submission, Progress
+      controllers/ ........ business logic, one file per resource
+      routes/ ............. API endpoints, one file per resource
+      middleware/ ......... authentication and error handling
+      utils/ .............. token generation, topic release rules
+
+    frontend/src/
+      api/ ................ one file per backend resource
+      components/comic/ ... comic panels, speech bubbles, characters
+      components/layout/ .. sidebar, navbar, page shell
+      components/shared/ .. loader, buttons, modal, page titles
+      context/ ............ authentication and workbook state
+      store/ .............. Redux slices
+      pages/ .............. one folder per section
+      styles/ ............. colors, fonts, comic theme
+
+
+DATABASE (5 collections)
+-------------------------------------------------------------------------------
+  User ........ fullname, username, email, hashed password, role
+  Module ...... one TOPIC: lesson content, objectives, competencies,
+                examples, references, publish flag, release date
+  Activity .... question, type, choices, correct answer, explanation
+  Submission .. graded answers, score, percentage, attempt number
+  Progress .... which sections a student completed, attempts
+
+  Activity types: multiple_choice, fill_blank, true_false, drag_drop
+
+
+STUDENT FLOW
+-------------------------------------------------------------------------------
+  Login -> Topics -> choose a topic -> Competencies -> Lesson
+        -> Practice (unscored) -> Independent Activity (graded)
+        -> Feedback (score, answers, explanations)
+        -> Review -> Progress
+
+
+KEY FEATURES
+-------------------------------------------------------------------------------
+  SERVER-SIDE GRADING
+    The correct answer is never sent to the browser, so it cannot be seen
+    in the developer tools. The server re-checks every answer on submit.
+
+  MATH-AWARE ANSWER CHECKING
+    "P1,234.50", "1,234.50" and "1234.5" are all accepted as the same
+    answer, with a small tolerance for centavo rounding.
+
+  TOPIC RELEASE SCHEDULING
+    Teachers set the date and time a topic opens. Before then, students
+    see the topic and a countdown, but the lesson and quiz are blocked by
+    the server - not merely hidden in the interface. Teachers can preview
+    upcoming topics at any time.
+
+  COMIC-STYLE LESSONS
+    Lessons are written as numbered panels with character dialogue, and
+    are rendered as real comic panels with speech bubbles and portraits.
+
+  TEACHER MONITORING
+    Class averages, per-student scores, attempts, and completion status,
+    refreshed automatically every 30 seconds.
+
+  SMART STARTUP LOADER
+    Waits for fonts, character images, and the server to respond. Shows
+    real progress, so a fast connection clears it almost instantly. It
+    always opens the app even if something fails.
+
+
+CONTENT
+-------------------------------------------------------------------------------
+  Four topics, grouped into two weeks. Each topic is a separate module so
+  it can be released on its own date.
+
+    Week 1, Topic 1 ....... Sigma Notation and Series
+    Week 1, Topic 2 ....... Percentage Change and Inflation
+    Week 2, Topic 3 ....... Profit and Loss
+    Week 2, Topic 4 ....... Deductions, Tax and Overtime Pay
+
+  Each topic includes:
+    6-panel comic discussion
+    about 9 key concepts
+    4 worked examples
+    4 practice items (unscored)
+    10 graded items (10 points total)
+
+  All answer keys were verified by submitting them through the live
+  grading engine and confirming a 100% score.
+
+
+DESIGN
+-------------------------------------------------------------------------------
+  Comic and manga style on a mathematics theme.
+
+    Background .......... cream graph paper
+    Cards ............... white grid paper
+    Panels .............. navy chalkboard with teal borders
+    Accent colors ....... teal, yellow, red, green
+    Headings ............ Fredoka One
+    Body text ........... Nunito
+    Numbers, equations .. JetBrains Mono
+    Borders ............. hard offset shadows, no blur, no rounded corners
+    Icons ............... lucide-react only, no emojis
+
+
+HOW TO RUN LOCALLY
+-------------------------------------------------------------------------------
+  Requires Node.js 18 or newer and MongoDB running on localhost:27017.
+
+    cd backend                     cd frontend
+    npm install                    npm install
+    copy .env.example to .env      copy .env.example to .env
+    npm run dev                    npm run dev
+    -> http://localhost:5000       -> http://localhost:5173
+
+  On first start the backend automatically creates the teacher account
+  and all four topics.
+
+
+ENVIRONMENT VARIABLES
+-------------------------------------------------------------------------------
+  BACKEND (backend/.env)
+    NODE_ENV ..... use "production" when deployed; this is what hides
+                   error stack traces from users
+    PORT ......... local only; Render provides its own
+    MONGO_URI .... local MongoDB or a MongoDB Atlas connection string
+    JWT_SECRET ... long random text; use a different one in production
+    CLIENT_URL ... the exact frontend address, with no slash at the end
+
+  FRONTEND (frontend/.env)
+    VITE_API_URL . the backend address ending in /api
+                   NOTE: this is built into the files, so after changing
+                   it you must redeploy for the change to take effect.
+
+
+KNOWN GAPS
+-------------------------------------------------------------------------------
+  - Unused packages are installed: socket.io-client on the frontend, and
+    helmet, express-rate-limit, joi, mongodb on the backend. Monitoring
+    uses 30-second polling, not websockets.
+  - The drag_drop activity type exists in the database and the grader
+    handles it, but no screen displays it yet.
+  - The teacher password is written directly in the seeder file and
+    reaches production through the repository.
+  - The seeder checks for one username but creates a different one, so on
+    an existing database the new teacher account is never created.
+  - Lesson HTML is trusted rather than cleaned before display.
+  - No automated tests are written, though the tools are installed.
+  - The old address /activities/interactive was renamed and now shows a
+    blank page, because the app has no "page not found" screen.
+
+===============================================================================

@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { User, ArrowLeft, Check, Circle, Trophy } from 'lucide-react';
+import { User, ArrowLeft, Trophy } from 'lucide-react';
 import SectionTitle from '../../components/shared/SectionTitle.jsx';
-import { SECTION_META } from '../../components/shared/sectionIcons.js';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getStudentDetailApi } from '../../api/teacherApi.js';
 import Loader from '../../components/shared/Loader.jsx';
-
-const SECTIONS = SECTION_META;
 
 export default function StudentDetail() {
   const { moduleId, studentId } = useParams();
@@ -47,51 +44,18 @@ export default function StudentDetail() {
       </div>
 
       <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        {/* Section progress */}
-        <div style={{ flex: 1, minWidth: '260px' }}>
-          <h2 style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.2rem', letterSpacing: '1px', marginBottom: '0.8rem' }}>
-            Section Progress
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {SECTIONS.map((sec) => {
-              const done = progress?.completedSections?.[sec.key];
-              const SecIcon = sec.icon;
-              return (
-                <div key={sec.key} style={{
-                  display: 'flex', alignItems: 'center', gap: '0.8rem',
-                  padding: '0.5rem 0.8rem',
-                  background: done ? 'var(--green-soft)' : 'var(--paper-dark)',
-                  border: '2px solid var(--ink)',
-                }}>
-                  <SecIcon size={17} strokeWidth={2.5} style={{ flexShrink: 0 }} />
-                  <span style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 700, flex: 1 }}>{sec.label}</span>
-                  <span className="formula-chip">{sec.math}</span>
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    color: done ? 'var(--green)' : 'var(--muted)',
-                  }}>
-                    {done ? <Check size={13} strokeWidth={3} /> : <Circle size={13} />}
-                    {done ? 'Done' : 'Pending'}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          {progress && (
-            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
-              Last visited: <strong>{progress.lastVisited}</strong> • {progress.attempts} attempt{progress.attempts !== 1 ? 's' : ''}
-            </div>
-          )}
-        </div>
-
         {/* Submission history */}
-        <div style={{ flex: 1, minWidth: '260px' }}>
-          <h2 style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.2rem', letterSpacing: '1px', marginBottom: '0.8rem' }}>
-            Submission History
-          </h2>
+        <div style={{ flex: 1, minWidth: '260px', maxWidth: '640px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
+            <h2 style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.2rem', letterSpacing: '1px' }}>
+              Submission History
+            </h2>
+            {progress && (
+              <span className="formula-chip">
+                {progress.attempts} attempt{progress.attempts !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
 
           {best && (
             <div className="comic-card" style={{ background: 'var(--yellow)', marginBottom: '0.8rem' }}>
