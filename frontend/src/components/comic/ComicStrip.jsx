@@ -131,7 +131,7 @@ export default function ComicStrip({ activity, onAnswered, readOnly = false, hig
               style={{ fontSize: '1rem', letterSpacing: '2px', padding: '0.7rem 2rem' }}
               onClick={handleSubmit}
             >
-              SUBMIT UR ANSWER?
+              SUBMIT YOUR ANSWER?
             </button>
           )}
           {submitted && <ResultBadge result={result} />}
