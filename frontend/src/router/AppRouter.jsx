@@ -19,7 +19,7 @@ import DiscussionPage            from '../pages/Lesson/DiscussionPage.jsx';
 import ConceptsPage              from '../pages/Lesson/ConceptsPage.jsx';
 import ExamplesPage              from '../pages/Lesson/ExamplesPage.jsx';
 import PracticeExercisesPage     from '../pages/Activities/PracticeExercisesPage.jsx';
-import InteractiveActivitiesPage from '../pages/Activities/InteractiveActivitiesPage.jsx';
+import IndependentActivityPage   from '../pages/Activities/IndependentActivityPage.jsx';
 import ViewScorePage             from '../pages/Feedback/ViewScorePage.jsx';
 import CorrectAnswersPage        from '../pages/Feedback/CorrectAnswersPage.jsx';
 import ExplanationPage           from '../pages/Feedback/ExplanationPage.jsx';
@@ -78,7 +78,7 @@ export default function AppRouter() {
       <Route path="/lesson/examples"  element={<PrivateRoute><MainLayout><ExamplesPage /></MainLayout></PrivateRoute>} />
 
       <Route path="/activities"             element={<PrivateRoute><MainLayout><PracticeExercisesPage /></MainLayout></PrivateRoute>} />
-      <Route path="/activities/interactive" element={<PrivateRoute><MainLayout><InteractiveActivitiesPage /></MainLayout></PrivateRoute>} />
+      <Route path="/activities/independent" element={<PrivateRoute><MainLayout><IndependentActivityPage /></MainLayout></PrivateRoute>} />
 
       <Route path="/feedback"             element={<PrivateRoute><MainLayout><ViewScorePage /></MainLayout></PrivateRoute>} />
       <Route path="/feedback/answers"     element={<PrivateRoute><MainLayout><CorrectAnswersPage /></MainLayout></PrivateRoute>} />

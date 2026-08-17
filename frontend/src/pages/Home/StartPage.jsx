@@ -16,7 +16,7 @@ export default function StartPage() {
           <li>Read the <strong>Learning Competencies</strong> to know your goals.</li>
           <li>Study the <strong>Lesson</strong> — discussion, concepts, and examples.</li>
           <li>Do the <strong>Practice Exercises</strong> to warm up.</li>
-          <li>Complete the <strong>Interactive Activities</strong> for grading.</li>
+          <li>Complete the <strong>Independent Activity</strong> for grading.</li>
           <li>Check your <strong>Feedback</strong> — score and explanations.</li>
           <li>Review incorrect answers and <strong>Retry</strong> if needed.</li>
           <li>Track your <strong>Progress</strong> over time.</li>

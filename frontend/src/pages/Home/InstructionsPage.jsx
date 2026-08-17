@@ -5,7 +5,7 @@ export default function InstructionsPage() {
   const steps = [
     { icon: BookOpen, title: 'Read Competencies', desc: 'Understand what you will learn.' },
     { icon: BookText, title: 'Study the Lesson', desc: 'Go through discussion, concepts, and examples.' },
-    { icon: NotebookPen, title: 'Do Activities', desc: 'Practice then take the interactive quiz.' },
+    { icon: NotebookPen, title: 'Do Activities', desc: 'Practice then take the independent activity.' },
     { icon: MessageCircleMore, title: 'Check Feedback', desc: 'See your score and correct answers.' },
     { icon: RotateCcw, title: 'Review & Retry', desc: 'Go over wrong answers and try again.' },
     { icon: BarChart3, title: 'Track Progress', desc: 'Monitor your improvement over attempts.' },

@@ -10,7 +10,7 @@ import { markSection } from '../../store/workbookSlice.js';
 import ComicStrip from '../../components/comic/ComicStrip.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 
-export default function InteractiveActivitiesPage() {
+export default function IndependentActivityPage() {
   const { moduleId, markComplete } = useWorkbook();
   const navigate  = useNavigate();
   const dispatch  = useDispatch();
@@ -63,7 +63,7 @@ export default function InteractiveActivitiesPage() {
   if (loading) return <Loader text="Loading activities..." />;
   if (activities.length === 0) return (
     <div>
-      <SectionTitle icon={NotebookPen} label="Q₁..Qₙ">Interactive Activities</SectionTitle>
+      <SectionTitle icon={NotebookPen} label="Q₁..Qₙ">Independent Activity</SectionTitle>
       <div className="comic-card">No activities found for this module.</div>
     </div>
   );
@@ -75,7 +75,7 @@ export default function InteractiveActivitiesPage() {
 
   return (
     <div>
-      <SectionTitle icon={NotebookPen} label="Q₁..Qₙ">Interactive Activities</SectionTitle>
+      <SectionTitle icon={NotebookPen} label="Q₁..Qₙ">Independent Activity</SectionTitle>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>

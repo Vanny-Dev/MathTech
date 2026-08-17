@@ -24,7 +24,7 @@ export default function ViewScorePage() {
       <SectionTitle icon={Percent} label="Σ/n">Score</SectionTitle>
       <div className="comic-card">
         No submission found.{' '}
-        <button className="btn btn-blue" style={{ marginTop: '0.5rem' }} onClick={() => navigate('/activities/interactive')}>
+        <button className="btn btn-blue" style={{ marginTop: '0.5rem' }} onClick={() => navigate('/activities/independent')}>
           Go to Activities
         </button>
       </div>

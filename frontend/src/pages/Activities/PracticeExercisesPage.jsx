@@ -34,8 +34,8 @@ export default function PracticeExercisesPage() {
     <div>
       <SectionTitle icon={PencilRuler} label="practice[]">Practice Exercises</SectionTitle>
       <div className="comic-card">No practice exercises yet for this module.</div>
-      <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={() => navigate('/activities/interactive')}>
-        Go to Interactive <ArrowRight size={15} />
+      <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={() => navigate('/activities/independent')}>
+        Go to Independent <ArrowRight size={15} />
       </button>
     </div>
   );
@@ -75,7 +75,7 @@ export default function PracticeExercisesPage() {
             Next <ArrowRight size={15} />
           </button>
         ) : (
-          <button className="btn btn-primary" onClick={() => navigate('/activities/interactive')}>
+          <button className="btn btn-primary" onClick={() => navigate('/activities/independent')}>
             Go to Graded Activities <ArrowRight size={15} />
           </button>
         )}

@@ -13,38 +13,34 @@ import {
   Users,
   Monitor,
   LogOut,
-  Check,
-  Lock,
   X,
   Sigma,
   BookMarked,
   CalendarClock,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useWorkbook } from '../../context/WorkbookContext.jsx';
 
 const studentNav = [
-  { icon: Home, label: 'Home', path: '/home', section: 'home', math: 'f(x)' },
-  { icon: BookMarked, label: 'Topics', path: '/topics', section: null, math: 'topics[]' },
-  { icon: BookOpen, label: 'Competencies', path: '/competencies', section: 'learningCompetencies', math: 'MELC' },
-  { icon: BookText, label: 'Lesson', path: '/lesson', section: 'lesson', math: '∫' },
-  { icon: NotebookPen, label: 'Activities', path: '/activities', section: 'activities', math: 'Qₙ' },
-  { icon: MessageCircleMore, label: 'Feedback', path: '/feedback', section: 'feedback', math: 'Σ/n' },
-  { icon: RotateCcw, label: 'Review', path: '/review', section: 'review', math: 'Δ' },
-  { icon: BarChart3, label: 'Progress', path: '/progress', section: 'progress', math: 'x̄' },
-  { icon: Info, label: 'About', path: '/about', section: null, math: 'i' },
+  { icon: Home, label: 'Home', path: '/home', section: 'home' },
+  { icon: BookMarked, label: 'Topics', path: '/topics', section: null },
+  { icon: BookOpen, label: 'Competencies', path: '/competencies', section: 'learningCompetencies' },
+  { icon: BookText, label: 'Lesson', path: '/lesson', section: 'lesson' },
+  { icon: NotebookPen, label: 'Activities', path: '/activities', section: 'activities' },
+  { icon: MessageCircleMore, label: 'Feedback', path: '/feedback', section: 'feedback' },
+  { icon: RotateCcw, label: 'Review', path: '/review', section: 'review' },
+  { icon: BarChart3, label: 'Progress', path: '/progress', section: 'progress' },
+  { icon: Info, label: 'About', path: '/about', section: null },
 ];
 
 const teacherNav = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', section: null, math: 'Σ' },
-  { icon: Users, label: 'Students', path: '/teacher/students', section: null, math: 'n =' },
-  { icon: Monitor, label: 'Monitor', path: '/teacher/monitor', section: null, math: 'live' },
-  { icon: CalendarClock, label: 'Schedule', path: '/teacher/schedule', section: null, math: 'release' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', section: null },
+  { icon: Users, label: 'Students', path: '/teacher/students', section: null },
+  { icon: Monitor, label: 'Monitor', path: '/teacher/monitor', section: null },
+  { icon: CalendarClock, label: 'Schedule', path: '/teacher/schedule', section: null },
 ];
 
 export default function Sidebar({ isOpen, onClose, isMobile }) {
   const { user, logout, isTeacher } = useAuth();
-  const { isUnlocked, completedSections } = useWorkbook();
   const navigate = useNavigate();
 
   const navItems = isTeacher ? teacherNav : studentNav;
@@ -85,26 +81,19 @@ export default function Sidebar({ isOpen, onClose, isMobile }) {
 
       <nav style={styles.nav}>
         {navItems.map((item) => {
-          const locked = !isTeacher && item.section && !isUnlocked(item.section);
-          const done = !isTeacher && item.section && completedSections[item.section];
           const Icon = item.icon;
 
           return (
             <NavLink
               key={item.path}
-              to={locked ? '#' : item.path}
-              onClick={(e) => locked && e.preventDefault()}
+              to={item.path}
               style={({ isActive }) => ({
                 ...styles.navItem,
                 ...(isActive ? styles.navActive : {}),
-                ...(locked ? styles.navLocked : {}),
               })}
             >
               <Icon size={18} />
               <span style={styles.navLabel}>{item.label}</span>
-              {item.math && <span style={styles.navMath}>{item.math}</span>}
-              {done && <span style={styles.badge}><Check size={12} /></span>}
-              {locked && <span style={{ ...styles.badge, background: 'var(--muted)' }}><Lock size={12} /></span>}
             </NavLink>
           );
         })}
@@ -258,28 +247,8 @@ const styles = {
     borderLeft: '4px solid var(--teal)',
     color: 'var(--teal)',
   },
-  navLocked: {
-    opacity: 0.4,
-    cursor: 'not-allowed',
-  },
   navLabel: {
     flex: 1,
-  },
-  navMath: {
-    fontFamily: 'JetBrains Mono, monospace',
-    fontSize: '0.62rem',
-    fontWeight: 700,
-    color: 'var(--muted)',
-    flexShrink: 0,
-  },
-  badge: {
-    background: 'var(--yellow)',
-    color: 'var(--ink)',
-    borderRadius: '999px',
-    padding: '0 6px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   logoutBtn: {
     margin: '1rem',

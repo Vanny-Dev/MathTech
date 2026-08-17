@@ -2,16 +2,6 @@ import React, { createContext, useContext, useState, useCallback, useMemo } from
 
 const WorkbookContext = createContext(null);
 
-const SECTION_ORDER = [
-  'home',
-  'learningCompetencies',
-  'lesson',
-  'activities',
-  'feedback',
-  'review',
-  'progress',
-];
-
 const MODULE_KEY = 'dw_module_id';
 
 export const WorkbookProvider = ({ children }) => {
@@ -37,19 +27,6 @@ export const WorkbookProvider = ({ children }) => {
     setCompletedSections((prev) => ({ ...prev, [section]: true }));
   }, []);
 
-  // Unlock sections progressively, but allow the main learning flow to stay accessible
-  const isUnlocked = useCallback((section) => {
-    const idx = SECTION_ORDER.indexOf(section);
-    if (idx === 0) return true;
-    if (section === 'learningCompetencies') return true;
-    if (section === 'lesson') return completedSections.home || completedSections.learningCompetencies;
-    if (section === 'activities') return completedSections.lesson || completedSections.home;
-    if (section === 'feedback') return completedSections.activities || completedSections.lesson;
-    if (section === 'review') return completedSections.feedback || completedSections.activities;
-    if (section === 'progress') return completedSections.review || completedSections.feedback;
-    return true;
-  }, [completedSections]);
-
   const resetWorkbook = useCallback(() => {
     localStorage.removeItem(MODULE_KEY);
     setModuleIdState(null);
@@ -64,9 +41,8 @@ export const WorkbookProvider = ({ children }) => {
     setModuleId,
     completedSections,
     markComplete,
-    isUnlocked,
     resetWorkbook,
-  }), [moduleId, completedSections, markComplete, isUnlocked, resetWorkbook]);
+  }), [moduleId, completedSections, markComplete, resetWorkbook]);
 
   return (
     <WorkbookContext.Provider value={value}>

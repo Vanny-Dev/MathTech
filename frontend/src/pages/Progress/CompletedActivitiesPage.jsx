@@ -26,7 +26,7 @@ export default function CompletedActivitiesPage() {
       {completed.length === 0 ? (
         <div className="comic-card" style={{ maxWidth: '500px' }}>
           <p style={{ fontFamily: 'Nunito, sans-serif' }}>No completed activities yet.</p>
-          <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={() => navigate('/activities/interactive')}>
+          <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={() => navigate('/activities/independent')}>
             Start Activities <ArrowRight size={15} />
           </button>
         </div>

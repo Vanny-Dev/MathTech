@@ -26,7 +26,7 @@ export default function CorrectAnswersPage() {
     <div>
       <SectionTitle icon={CheckCheck} label="x =">Correct Answers</SectionTitle>
       <div className="comic-card">No submission found.
-        <button className="btn btn-blue" style={{ marginTop: '0.5rem' }} onClick={() => navigate('/activities/interactive')}>Go to Activities</button>
+        <button className="btn btn-blue" style={{ marginTop: '0.5rem' }} onClick={() => navigate('/activities/independent')}>Go to Activities</button>
       </div>
     </div>
   );
