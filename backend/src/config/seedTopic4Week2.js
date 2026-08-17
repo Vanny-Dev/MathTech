@@ -19,6 +19,8 @@ const moduleData = {
   subject:    'Mathematics',
   gradeLevel: 'Grade 11',
   quarter:    'Q1',
+  week:        2,
+  topicNumber: 4,
 
   objectives: [
     'Compute the hourly rate from a daily or monthly salary.',

@@ -13,6 +13,8 @@ const moduleData = {
   subject:    'Mathematics',
   gradeLevel: 'Grade 11',
   quarter:    'Q1',
+  week:        1,
+  topicNumber: 1,
 
   objectives: [
     'Identify the index, lower limit, upper limit and general term of a sigma expression.',

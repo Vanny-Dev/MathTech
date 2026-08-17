@@ -25,6 +25,18 @@ const ModuleSchema = new mongoose.Schema(
             type: String,
         },
 
+        // Curriculum position. Topics are always listed in this order —
+        // never by releaseDate, which changes whenever a teacher reschedules
+        // and would make the list shuffle underneath the students.
+        week: {
+            type: Number,
+            default: 0,
+        },
+        topicNumber: {
+            type: Number,
+            default: 0,
+        },
+
         objectives: [String],
         competencies: [String],
 

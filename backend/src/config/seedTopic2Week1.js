@@ -15,6 +15,8 @@ const moduleData = {
   subject:    'Mathematics',
   gradeLevel: 'Grade 11',
   quarter:    'Q1',
+  week:        1,
+  topicNumber: 2,
 
   objectives: [
     'Compute a percentage increase or a percentage decrease.',

@@ -9,6 +9,8 @@ const toListItem = (m, user) => ({
   subject:     m.subject,
   gradeLevel:  m.gradeLevel,
   quarter:     m.quarter,
+  week:        m.week,
+  topicNumber: m.topicNumber,
   releaseDate: m.releaseDate,
   isReleased:  isReleased(m),
   ...(isTeacher(user) ? { isPublished: m.isPublished } : {}),
@@ -23,9 +25,12 @@ export const getModules = async (req, res, next) => {
   try {
     const filter = isTeacher(req.user) ? {} : { isPublished: true };
 
+    // Always curriculum order. Sorting by releaseDate would reshuffle the whole
+    // list every time a teacher schedules a topic, so Week 1 Topic 1 would stop
+    // being first. createdAt is the tie-break for modules with no week set.
     const modules = await Module.find(filter)
-      .select('title subject gradeLevel quarter releaseDate isPublished')
-      .sort({ releaseDate: 1, createdAt: 1 });
+      .select('title subject gradeLevel quarter week topicNumber releaseDate isPublished')
+      .sort({ week: 1, topicNumber: 1, createdAt: 1 });
 
     res.json(modules.map((m) => toListItem(m, req.user)));
   } catch (err) {

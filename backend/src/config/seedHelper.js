@@ -24,6 +24,18 @@ export const seedModuleWithActivities = async ({
     const existing = await Module.findOne({ title: moduleData.title });
 
     if (existing) {
+      // Curriculum position comes from code, not from the teacher, so keep it
+      // in sync even for modules seeded before these fields existed. This
+      // deliberately does NOT touch releaseDate — that is the teacher's.
+      if (existing.week !== moduleData.week ||
+          existing.topicNumber !== moduleData.topicNumber) {
+        await Module.updateOne(
+          { _id: existing._id },
+          { $set: { week: moduleData.week, topicNumber: moduleData.topicNumber } }
+        );
+        console.log(`↕️  ${label} order set to week ${moduleData.week}, topic ${moduleData.topicNumber}`);
+      }
+
       const count = await Activity.countDocuments({ moduleId: existing._id });
 
       if (count === expected) {

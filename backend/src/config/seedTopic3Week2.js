@@ -16,6 +16,8 @@ const moduleData = {
   subject:    'Mathematics',
   gradeLevel: 'Grade 11',
   quarter:    'Q1',
+  week:        2,
+  topicNumber: 3,
 
   objectives: [
     'Identify cost price and selling price in a business situation.',
