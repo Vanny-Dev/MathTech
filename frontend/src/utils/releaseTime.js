@@ -1,23 +1,29 @@
 /**
  * Release-date formatting helpers.
  *
+ * Topics are LOCKED BY DEFAULT: no releaseDate means "not scheduled yet", not
+ * "open". A teacher must either pick a date or press Open now.
+ *
  * Dates travel as ISO strings (UTC) and are always shown in the viewer's local
  * time, so a teacher in Manila sets "8:00 AM" and students in Manila see 8:00 AM.
  */
 
 export const isReleased = (releaseDate) =>
-  !releaseDate || new Date(releaseDate).getTime() <= Date.now();
+  !!releaseDate && new Date(releaseDate).getTime() <= Date.now();
+
+/** true when the teacher has not scheduled the topic at all */
+export const isUnscheduled = (releaseDate) => !releaseDate;
 
 /** Human date for display, e.g. "Aug 22, 2026 · 8:00 AM" */
 export const formatRelease = (releaseDate) => {
-  if (!releaseDate) return 'Open now';
+  if (!releaseDate) return 'Not scheduled';
   return new Date(releaseDate).toLocaleString(undefined, {
     year: 'numeric', month: 'short', day: 'numeric',
     hour: 'numeric', minute: '2-digit',
   });
 };
 
-/** "in 6 days 14 hours" / "in 12 minutes" / null once released */
+/** "in 6 days 14 hours" / "in 12 minutes" / null once released or unscheduled */
 export const timeUntil = (releaseDate) => {
   if (!releaseDate) return null;
   const ms = new Date(releaseDate).getTime() - Date.now();
@@ -49,3 +55,6 @@ export const fromInputValue = (value) => {
   const d = new Date(value);          // parsed as local time
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 };
+
+/** ISO string for "right now" — how Open now is stored so it survives restarts */
+export const nowIso = () => new Date().toISOString();

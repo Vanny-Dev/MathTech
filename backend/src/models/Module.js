@@ -46,8 +46,11 @@ const ModuleSchema = new mongoose.Schema(
         },
 
         // When students may open this topic.
-        // null  -> available as soon as it is published
+        // null        -> LOCKED, not scheduled yet (the default for new topics)
         // future date -> visible to students but locked until then
+        // past/now    -> open
+        // A topic is closed by default so a restart or a newly added topic
+        // never exposes content before the teacher opens it.
         releaseDate: {
             type: Date,
             default: null,

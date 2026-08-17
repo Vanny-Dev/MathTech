@@ -39,9 +39,14 @@ export default function ExamplesPage() {
           </div>
         ))}
       </div>
-      <button className="btn btn-primary" style={{ marginTop: '1.5rem' }} onClick={() => navigate('/activities')}>
-        Go to Activities <ArrowRight size={15} />
-      </button>
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.5rem' }}>
+        <button className="btn btn-teal" onClick={() => navigate('/lesson/reflection')}>
+          Write your Reflection <ArrowRight size={15} />
+        </button>
+        <button className="btn btn-primary" onClick={() => navigate('/activities')}>
+          Go to Activities <ArrowRight size={15} />
+        </button>
+      </div>
     </div>
   );
 }

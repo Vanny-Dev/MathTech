@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CalendarClock, Lock, Unlock, Save, X, FileWarning } from 'lucide-react';
+import { CalendarClock, Lock, Unlock, Save, Zap, FileWarning } from 'lucide-react';
 import SectionTitle from '../../components/shared/SectionTitle.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 import { getModulesApi, setReleaseDateApi } from '../../api/moduleApi.js';
@@ -8,6 +8,7 @@ import {
   timeUntil,
   toInputValue,
   fromInputValue,
+  nowIso,
 } from '../../utils/releaseTime.js';
 
 export default function TeacherSchedule() {
@@ -28,21 +29,26 @@ export default function TeacherSchedule() {
 
   useEffect(() => { load(); }, []);
 
-  const save = async (id, value) => {
+  // isoOrNull: an ISO string to schedule/open, or null to lock the topic again
+  const save = async (id, isoOrNull, verb) => {
     setSaving((p) => ({ ...p, [id]: true }));
     setNotice(null);
     try {
-      const { data } = await setReleaseDateApi(id, fromInputValue(value));
+      const { data } = await setReleaseDateApi(id, isoOrNull);
       setModules((prev) => prev.map((m) => (m._id === id ? { ...m, ...data } : m)));
+      // Keep the picker showing exactly what was saved, so it never resets
       setDrafts((prev) => ({ ...prev, [id]: toInputValue(data.releaseDate) }));
+
       setNotice({
         type: 'ok',
-        text: data.releaseDate
-          ? `"${data.title}" opens ${formatRelease(data.releaseDate)}`
-          : `"${data.title}" is now open immediately`,
+        text: !data.releaseDate
+          ? `"${data.title}" is now locked`
+          : data.isReleased
+          ? `"${data.title}" is now OPEN to students`
+          : `"${data.title}" opens ${formatRelease(data.releaseDate)}`,
       });
     } catch (err) {
-      setNotice({ type: 'err', text: err.response?.data?.message || 'Could not save the release date' });
+      setNotice({ type: 'err', text: err.response?.data?.message || `Could not ${verb} this topic` });
     } finally {
       setSaving((p) => ({ ...p, [id]: false }));
     }
@@ -56,9 +62,11 @@ export default function TeacherSchedule() {
 
       <div className="chalk-card" style={{ maxWidth: '820px', marginBottom: '1.25rem' }}>
         <p style={{ fontFamily: 'Nunito, sans-serif', lineHeight: 1.7 }}>
-          Set when each topic opens for students. Before that moment students can see the
-          topic and its countdown, but the lesson and quiz stay locked — on the server, not
-          just in the interface. Leave the field empty to open a topic immediately.
+          <strong>Every topic starts locked.</strong> Students can see it and its
+          countdown, but the lesson and quiz stay closed — enforced on the server,
+          not just hidden in the interface. Pick a date and Save to schedule a
+          topic, or press Open now to release it immediately. Your choice is
+          saved and is not reset when the server restarts.
         </p>
       </div>
 
@@ -73,9 +81,11 @@ export default function TeacherSchedule() {
       ) : (
         <div style={s.list}>
           {modules.map((m) => {
-            const released  = m.isReleased;
-            const countdown = timeUntil(m.releaseDate);
-            const dirty     = drafts[m._id] !== toInputValue(m.releaseDate);
+            const released   = m.isReleased;
+            const scheduled  = !!m.releaseDate;
+            const countdown  = timeUntil(m.releaseDate);
+            const dirty      = drafts[m._id] !== toInputValue(m.releaseDate);
+            const busy       = saving[m._id];
 
             return (
               <div key={m._id} className="comic-card" style={s.card}>
@@ -93,9 +103,9 @@ export default function TeacherSchedule() {
                 </div>
 
                 <div style={s.status}>
-                  {m.releaseDate
-                    ? `${released ? 'Released' : 'Opens'} ${formatRelease(m.releaseDate)}`
-                    : 'No schedule — open as soon as it is published'}
+                  {!scheduled
+                    ? 'Locked — no date set yet'
+                    : `${released ? 'Opened' : 'Opens'} ${formatRelease(m.releaseDate)}`}
                   {countdown && <span style={s.countdown}> · {countdown}</span>}
                 </div>
 
@@ -110,19 +120,29 @@ export default function TeacherSchedule() {
                   <button
                     className="btn btn-teal"
                     style={s.btn}
-                    disabled={saving[m._id] || !dirty}
-                    onClick={() => save(m._id, drafts[m._id])}
+                    disabled={busy || !dirty || !drafts[m._id]}
+                    onClick={() => save(m._id, fromInputValue(drafts[m._id]), 'schedule')}
+                    title="Save the chosen date"
                   >
-                    <Save size={14} /> {saving[m._id] ? 'Saving...' : 'Save'}
+                    <Save size={14} /> {busy ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    className="btn btn-green"
+                    style={s.btn}
+                    disabled={busy || released}
+                    onClick={() => save(m._id, nowIso(), 'open')}
+                    title="Release this topic to students right now"
+                  >
+                    <Zap size={14} /> Open now
                   </button>
                   <button
                     className="btn btn-outline"
                     style={s.btn}
-                    disabled={saving[m._id] || !m.releaseDate}
-                    onClick={() => save(m._id, '')}
-                    title="Remove the schedule and open this topic now"
+                    disabled={busy || !scheduled}
+                    onClick={() => save(m._id, null, 'lock')}
+                    title="Close this topic again and clear its date"
                   >
-                    <X size={14} /> Open now
+                    <Lock size={14} /> Lock
                   </button>
                 </div>
 

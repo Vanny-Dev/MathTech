@@ -80,9 +80,17 @@ export default function TopicsPage() {
                   <>
                     <div style={s.lockRow}>
                       <CalendarClock size={15} strokeWidth={2.5} />
-                      <span>Opens {formatRelease(m.releaseDate)}</span>
+                      <span>
+                        {m.releaseDate
+                          ? `Opens ${formatRelease(m.releaseDate)}`
+                          : 'Not open yet'}
+                      </span>
                     </div>
-                    {countdown && <div style={s.countdown}>{countdown}</div>}
+                    {countdown ? (
+                      <div style={s.countdown}>{countdown}</div>
+                    ) : !m.releaseDate ? (
+                      <div style={s.soon}>Your teacher has not opened this topic yet.</div>
+                    ) : null}
                     <button className="btn btn-outline" style={s.btn} disabled>
                       <Lock size={14} /> Locked
                     </button>
@@ -90,9 +98,7 @@ export default function TopicsPage() {
                 ) : (
                   <>
                     <div style={s.openRow}>
-                      {m.releaseDate
-                        ? `Released ${formatRelease(m.releaseDate)}`
-                        : 'Available now'}
+                      Opened {formatRelease(m.releaseDate)}
                     </div>
                     <button
                       className={selected ? 'btn btn-teal' : 'btn btn-primary'}
@@ -175,6 +181,12 @@ const s = {
     fontSize: '0.75rem',
     fontWeight: 700,
     color: 'var(--red)',
+  },
+  soon: {
+    fontFamily: 'Nunito, sans-serif',
+    fontSize: '0.78rem',
+    lineHeight: 1.5,
+    color: 'var(--muted-strong)',
   },
   openRow: {
     fontFamily: 'Nunito, sans-serif',

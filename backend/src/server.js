@@ -14,6 +14,7 @@ import activityRoutes from './routes/activityRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import teacherRoutes  from './routes/teacherRoutes.js';
+import reflectionRoutes from './routes/reflectionRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -78,6 +79,7 @@ const startServer = async () => {
   app.use('/api/progress',   progressRoutes);
   app.use('/api/feedback',   feedbackRoutes);
   app.use('/api/teacher',    teacherRoutes);
+  app.use('/api/reflections', reflectionRoutes);
 
   // Unknown route -> JSON, not Express's default HTML page
   app.use((req, res) => {

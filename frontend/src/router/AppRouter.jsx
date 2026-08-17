@@ -18,6 +18,7 @@ import CompetenciesPage          from '../pages/LearningCompetencies/Competencie
 import DiscussionPage            from '../pages/Lesson/DiscussionPage.jsx';
 import ConceptsPage              from '../pages/Lesson/ConceptsPage.jsx';
 import ExamplesPage              from '../pages/Lesson/ExamplesPage.jsx';
+import ReflectionPage            from '../pages/Lesson/ReflectionPage.jsx';
 import PracticeExercisesPage     from '../pages/Activities/PracticeExercisesPage.jsx';
 import IndependentActivityPage   from '../pages/Activities/IndependentActivityPage.jsx';
 import ViewScorePage             from '../pages/Feedback/ViewScorePage.jsx';
@@ -76,6 +77,7 @@ export default function AppRouter() {
       <Route path="/lesson"           element={<PrivateRoute><MainLayout><DiscussionPage /></MainLayout></PrivateRoute>} />
       <Route path="/lesson/concepts"  element={<PrivateRoute><MainLayout><ConceptsPage /></MainLayout></PrivateRoute>} />
       <Route path="/lesson/examples"  element={<PrivateRoute><MainLayout><ExamplesPage /></MainLayout></PrivateRoute>} />
+      <Route path="/lesson/reflection" element={<PrivateRoute><MainLayout><ReflectionPage /></MainLayout></PrivateRoute>} />
 
       <Route path="/activities"             element={<PrivateRoute><MainLayout><PracticeExercisesPage /></MainLayout></PrivateRoute>} />
       <Route path="/activities/independent" element={<PrivateRoute><MainLayout><IndependentActivityPage /></MainLayout></PrivateRoute>} />

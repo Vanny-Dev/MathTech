@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { User, ArrowLeft, Trophy } from 'lucide-react';
+import { User, ArrowLeft, Trophy, PenLine } from 'lucide-react';
 import SectionTitle from '../../components/shared/SectionTitle.jsx';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getStudentDetailApi } from '../../api/teacherApi.js';
@@ -22,7 +22,12 @@ export default function StudentDetail() {
   if (loading) return <Loader text="Loading student detail..." />;
   if (!detail) return <div className="comic-card">Student not found.</div>;
 
-  const { student, progress, submissions } = detail;
+  const { student, progress, submissions, reflection } = detail;
+  const stamp = (d) => new Date(d).toLocaleString(undefined, {
+    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+  });
+  const wasEdited = reflection?.updatedAt && reflection?.createdAt &&
+    new Date(reflection.updatedAt).getTime() - new Date(reflection.createdAt).getTime() > 1000;
   const best = submissions.reduce((max, s) => (s.percentage > (max?.percentage || 0) ? s : max), null);
 
   return (
@@ -41,6 +46,33 @@ export default function StudentDetail() {
         <div style={{ fontFamily: 'Nunito, sans-serif', color: 'var(--board-light)', marginTop: '0.2rem' }}>
           {student.email}
         </div>
+      </div>
+
+      {/* Student's reflection on this topic — read only */}
+      <div style={{ maxWidth: '640px', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
+          <h2 style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.2rem', letterSpacing: '1px' }}>
+            Reflection
+          </h2>
+          <span className="formula-chip">{reflection ? 'written' : 'none yet'}</span>
+        </div>
+
+        {reflection ? (
+          <div className="comic-card">
+            <div style={rs.stamp}>
+              <PenLine size={13} strokeWidth={2.5} />
+              <span>
+                Written {stamp(reflection.createdAt)}
+                {wasEdited && <> · edited {stamp(reflection.updatedAt)}</>}
+              </span>
+            </div>
+            <p style={rs.text}>{reflection.content}</p>
+          </div>
+        ) : (
+          <div className="comic-card" style={rs.empty}>
+            This student has not written a reflection for this topic yet.
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
@@ -106,3 +138,29 @@ export default function StudentDetail() {
     </div>
   );
 }
+
+const rs = {
+  stamp: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.35rem',
+    fontFamily: 'JetBrains Mono, monospace',
+    fontSize: '0.68rem',
+    fontWeight: 700,
+    color: 'var(--muted-strong)',
+    marginBottom: '0.5rem',
+  },
+  text: {
+    fontFamily: 'Nunito, sans-serif',
+    fontSize: '0.95rem',
+    lineHeight: 1.8,
+    whiteSpace: 'pre-wrap',   // keep the student's own paragraph breaks
+    overflowWrap: 'anywhere',
+    margin: 0,
+  },
+  empty: {
+    fontFamily: 'Nunito, sans-serif',
+    fontSize: '0.9rem',
+    color: 'var(--muted-strong)',
+  },
+};

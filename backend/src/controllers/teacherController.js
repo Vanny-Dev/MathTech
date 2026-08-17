@@ -1,6 +1,7 @@
 import User       from '../models/User.js';
 import Progress   from '../models/Progress.js';
 import Submission from '../models/Submission.js';
+import Reflection from '../models/Reflection.js';
 
 // @desc    Get all students
 // @route   GET /api/teacher/students
@@ -108,6 +109,9 @@ export const getStudentDetail = async (req, res, next) => {
       isPractice: false,
     }).sort({ attempt: 1 });
 
+    // The student's written reflection on this topic, if they have one
+    const reflection = await Reflection.findOne({ userId: studentId, moduleId });
+
     res.json({
       student: {
         _id:      student._id,
@@ -116,6 +120,13 @@ export const getStudentDetail = async (req, res, next) => {
         email:    student.email,
       },
       progress: progress || null,
+      reflection: reflection
+        ? {
+            content:   reflection.content,
+            createdAt: reflection.createdAt,
+            updatedAt: reflection.updatedAt,
+          }
+        : null,
       submissions: submissions.map((s) => ({
         submissionId: s._id,
         attempt:      s.attempt,

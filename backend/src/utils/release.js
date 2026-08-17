@@ -1,14 +1,24 @@
 /**
  * Release-window helpers.
  *
- * A module is readable by a student when it is published AND its release date
- * has passed. Teachers bypass the release gate entirely so they can prepare
- * and preview upcoming topics.
+ * A topic is CLOSED BY DEFAULT. A newly seeded or newly created module has no
+ * releaseDate, and stays locked until a teacher schedules it or opens it. That
+ * is deliberate: a fresh deploy, a server restart, or adding a topic must never
+ * expose content to students before the teacher intends it.
+ *
+ *   releaseDate = null            -> locked, not scheduled yet
+ *   releaseDate in the future     -> locked, students see a countdown
+ *   releaseDate now or in the past-> open
+ *
+ * "Open now" is stored as the current timestamp rather than null, so the topic
+ * stays open across restarts. Clearing the date puts the topic back to locked.
+ *
+ * Teachers bypass the gate entirely so they can prepare and preview.
  */
 
 export const isReleased = (module) => {
   if (!module) return false;
-  if (!module.releaseDate) return true;      // no date set -> open immediately
+  if (!module.releaseDate) return false;      // no schedule -> locked
   return new Date(module.releaseDate).getTime() <= Date.now();
 };
 
@@ -16,7 +26,7 @@ export const isTeacher = (user) => user?.role === 'teacher';
 
 /**
  * Can this user read the module's learning content?
- * Teachers: always. Students: only published + released.
+ * Teachers: always. Students: only published AND released.
  */
 export const canAccessModule = (user, module) => {
   if (!module) return false;
@@ -40,10 +50,13 @@ export const denyIfLocked = (res, user, module) => {
     return true;
   }
 
-  // 423 Locked — the client uses this to show the countdown instead of an error
+  // 423 Locked — the client uses this to show the countdown or a
+  // "not scheduled yet" notice instead of an error
   res.status(423).json({
-    message: 'This topic has not been released yet',
-    releaseDate: module.releaseDate,
+    message: module.releaseDate
+      ? 'This topic has not been released yet'
+      : 'This topic has not been scheduled yet',
+    releaseDate: module.releaseDate ?? null,
     title: module.title,
   });
   return true;
