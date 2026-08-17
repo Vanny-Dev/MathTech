@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Logo from './Logo.jsx';
 
 /**
  * Startup splash that gates the app until the things it actually needs are
@@ -98,10 +99,7 @@ export default function AppLoader({ children }) {
   return (
     <div className="graph-paper" style={s.screen}>
       <div style={s.card}>
-        <div style={s.brand}>
-          <span style={s.mark}>Σ</span>
-          <span style={s.name}>MathTech</span>
-        </div>
+        <Logo width={240} style={{ margin: "0 auto" }} />
 
         <div style={s.barOuter}>
           <div style={{ ...s.barInner, width: `${pct}%` }} />

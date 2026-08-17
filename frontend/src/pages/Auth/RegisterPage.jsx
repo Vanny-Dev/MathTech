@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Sigma, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import Logo from '../../components/shared/Logo.jsx';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerApi } from '../../api/authApi.js';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -33,9 +34,7 @@ export default function RegisterPage() {
     <div style={styles.page}>
       <div style={styles.panel}>
         <div style={styles.header}>
-          <h1 style={styles.title}>
-            <Sigma size={26} strokeWidth={2.5} /> MATHTECH
-          </h1>
+          <Logo width={210} style={{ margin: "0 auto" }} />
           <p style={styles.subtitle}>Create your student account</p>
         </div>
 

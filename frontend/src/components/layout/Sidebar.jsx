@@ -14,10 +14,10 @@ import {
   Monitor,
   LogOut,
   X,
-  Sigma,
   BookMarked,
   CalendarClock,
 } from 'lucide-react';
+import Logo from '../shared/Logo.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 const studentNav = [
@@ -60,10 +60,8 @@ export default function Sidebar({ isOpen, onClose, isMobile }) {
       }}
     >
       <div style={styles.logo}>
-        <span style={styles.logoWrap}>
-          <span style={styles.logoMark}><Sigma size={17} strokeWidth={3} /></span>
-          <span style={styles.logoText}>MathTech</span>
-        </span>
+        {/* The artwork includes the wordmark, so no text label beside it */}
+        <Logo width={168} />
         {isMobile && (
           <button type="button" onClick={onClose} style={styles.closeButton} aria-label="Close menu">
             <X size={18} />
@@ -153,32 +151,6 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  logoWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    minWidth: 0,
-  },
-  logoMark: {
-    width: '28px',
-    height: '28px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'var(--teal)',
-    color: 'var(--board)',
-    border: '2px solid var(--paper)',
-    flexShrink: 0,
-  },
-  logoText: {
-    fontFamily: 'Fredoka One, cursive',
-    fontSize: '1rem',
-    letterSpacing: '0.5px',
-    color: 'var(--teal)',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
   },
   closeButton: {
     background: 'transparent',
