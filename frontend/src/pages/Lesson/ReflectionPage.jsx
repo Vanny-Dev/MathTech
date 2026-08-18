@@ -96,8 +96,7 @@ export default function ReflectionPage() {
 
       <div className="chalk-card" style={{ maxWidth: '720px', marginBottom: '1.25rem' }}>
         <p style={{ fontFamily: 'Nunito, sans-serif', lineHeight: 1.7, marginBottom: '0.6rem' }}>
-          Write what you understood from this topic in your own words. There is no
-          score for this. You can come back and edit it any time.
+          Write what you understood from this topic in your own words. This is for your own thinking. You can come back and edit it any time.
         </p>
         <ul style={s.prompts}>
           {PROMPTS.map((p) => <li key={p}>{p}</li>)}

@@ -239,13 +239,6 @@ function checkAnswer(activity, givenAnswer) {
             return g !== null && c !== null && g === c;
         }
 
-        case 'drag_drop': {
-            // ordered sequence — every position must match
-            if (!Array.isArray(correct) || !Array.isArray(givenAnswer)) return false;
-            if (correct.length !== givenAnswer.length) return false;
-            return correct.every((item, i) => valuesMatch(givenAnswer[i], item));
-        }
-
         default:
             return false;
     }

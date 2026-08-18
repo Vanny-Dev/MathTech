@@ -7,13 +7,16 @@
 WHAT IT IS
 -------------------------------------------------------------------------------
 MathTech is a web-based digital workbook for Mathematics. Students read
-comic-style lessons and answer graded quizzes. Teachers schedule when each
-topic opens and monitor every student's progress in real time.
+comic-style lessons, answer graded quizzes, and write a reflection for each
+topic. Teachers decide when each topic opens and monitor every student's
+progress, scores, and reflections.
 
 Two kinds of users:
   STUDENT  - reads lessons, answers practice and graded activities,
-             sees scores, explanations, and personal progress
-  TEACHER  - sets topic release dates and monitors class progress
+             writes and edits a reflection per topic, sees scores,
+             explanations, and personal progress
+  TEACHER  - opens or schedules each topic, monitors class progress,
+             and reads each student's reflection
              (seeded account only; registration always creates a student)
 
 
@@ -49,14 +52,17 @@ MERN stack - MongoDB, Express, React, Node.js.
 PROJECT STRUCTURE
 -------------------------------------------------------------------------------
   DigitalWorkbookNavigation/
-    render.yaml ........... deployment settings for the API
+    index.html ............ standalone overview page (open in a browser)
     overview.md ........... full technical documentation
     summary.txt ........... this file
+    APK-PROMPT.md ......... spec for building an Android WebView app
+    render.yaml ........... deployment settings for the API
 
     backend/src/
       server.js ........... Express app, CORS, graceful shutdown
       config/ ............. database connection and content seeders
-      models/ ............. User, Module, Activity, Submission, Progress
+      models/ ............. User, Module, Activity, Submission,
+                            Progress, Reflection
       controllers/ ........ business logic, one file per resource
       routes/ ............. API endpoints, one file per resource
       middleware/ ......... authentication and error handling
@@ -66,35 +72,58 @@ PROJECT STRUCTURE
       api/ ................ one file per backend resource
       components/comic/ ... comic panels, speech bubbles, characters
       components/layout/ .. sidebar, navbar, page shell
-      components/shared/ .. loader, buttons, modal, page titles
+      components/shared/ .. startup loader, logo, buttons, page titles
       context/ ............ authentication and workbook state
       store/ .............. Redux slices
-      pages/ .............. one folder per section
+      pages/ .............. 29 pages, one folder per section
       styles/ ............. colors, fonts, comic theme
+      assets/ ............. logo
+    frontend/public/assets/ character artwork
+    frontend/assets-source/ full-resolution originals (not deployed)
 
 
-DATABASE (5 collections)
+DATABASE (6 collections)
 -------------------------------------------------------------------------------
   User ........ fullname, username, email, hashed password, role
   Module ...... one TOPIC: lesson content, objectives, competencies,
-                examples, references, publish flag, release date
+                examples, references, publish flag, release date,
+                week and topic number (for ordering)
   Activity .... question, type, choices, correct answer, explanation
   Submission .. graded answers, score, percentage, attempt number
   Progress .... which sections a student completed, attempts
+  Reflection .. one written reflection per student per topic
 
-  Activity types: multiple_choice, fill_blank, true_false, drag_drop
+  Activity types: multiple_choice, fill_blank, true_false
+
+  API groups: /api/auth, /api/users, /api/modules, /api/activities,
+              /api/progress, /api/feedback, /api/teacher, /api/reflections
 
 
 STUDENT FLOW
 -------------------------------------------------------------------------------
-  Login -> Topics -> choose a topic -> Competencies -> Lesson
-        -> Practice (unscored) -> Independent Activity (graded)
+  Login -> Topics -> choose a topic -> Competencies
+        -> Lesson (Discussion, Concepts, Examples, Reflection)
+        -> Practice Exercises (unscored)
+        -> Independent Activity (graded)
         -> Feedback (score, answers, explanations)
         -> Review -> Progress
 
 
 KEY FEATURES
 -------------------------------------------------------------------------------
+  TOPICS ARE LOCKED BY DEFAULT
+    A new topic, a fresh deployment, or a server restart never exposes
+    content. Every topic stays closed until the teacher opens it or
+    schedules a date. Students see the topic and a countdown, but the
+    lesson and quiz are blocked by the server, not merely hidden.
+    The teacher's chosen date is saved and survives server restarts,
+    and can be edited at any time.
+
+  STABLE TOPIC ORDER
+    Topics are always listed in curriculum order (Week 1 Topic 1 first),
+    based on stored week and topic numbers - never by release date, which
+    would reshuffle the list every time a teacher changes a schedule.
+
   SERVER-SIDE GRADING
     The correct answer is never sent to the browser, so it cannot be seen
     in the developer tools. The server re-checks every answer on submit.
@@ -103,30 +132,32 @@ KEY FEATURES
     "P1,234.50", "1,234.50" and "1234.5" are all accepted as the same
     answer, with a small tolerance for centavo rounding.
 
-  TOPIC RELEASE SCHEDULING
-    Teachers set the date and time a topic opens. Before then, students
-    see the topic and a countdown, but the lesson and quiz are blocked by
-    the server - not merely hidden in the interface. Teachers can preview
-    upcoming topics at any time.
-
   COMIC-STYLE LESSONS
     Lessons are written as numbered panels with character dialogue, and
-    are rendered as real comic panels with speech bubbles and portraits.
+    are rendered as real comic panels with speech bubbles and character
+    portraits. New content becomes comic-style automatically.
+
+  REFLECTION PER TOPIC
+    After the lesson, each student writes a reflection in their own
+    words. It can be edited any time, and shows when it was written and
+    last edited. Students are told plainly that their teacher can read
+    it. One student can never read or edit another student's reflection.
 
   TEACHER MONITORING
-    Class averages, per-student scores, attempts, and completion status,
-    refreshed automatically every 30 seconds.
+    Class averages, per-student scores, attempts, completion status, and
+    each student's reflection per topic. Refreshes every 30 seconds.
 
   SMART STARTUP LOADER
-    Waits for fonts, character images, and the server to respond. Shows
-    real progress, so a fast connection clears it almost instantly. It
-    always opens the app even if something fails.
+    Waits for fonts, character images, and the server to respond, showing
+    real progress rather than a fake timer. It always opens the app even
+    if something fails, and warns when a sleeping free-tier server is
+    taking time to wake up.
 
 
 CONTENT
 -------------------------------------------------------------------------------
   Four topics, grouped into two weeks. Each topic is a separate module so
-  it can be released on its own date.
+  it can be opened on its own date.
 
     Week 1, Topic 1 ....... Sigma Notation and Series
     Week 1, Topic 2 ....... Percentage Change and Inflation
@@ -157,6 +188,8 @@ DESIGN
     Numbers, equations .. JetBrains Mono
     Borders ............. hard offset shadows, no blur, no rounded corners
     Icons ............... lucide-react only, no emojis
+    Logo ................ MathTech lockup, used in the sidebar, the login
+                          and register headers, and the startup loader
 
 
 HOW TO RUN LOCALLY
@@ -170,7 +203,8 @@ HOW TO RUN LOCALLY
     -> http://localhost:5000       -> http://localhost:5173
 
   On first start the backend automatically creates the teacher account
-  and all four topics.
+  and all four topics. All topics begin locked; open them from the
+  teacher's Schedule page.
 
 
 ENVIRONMENT VARIABLES
@@ -182,6 +216,9 @@ ENVIRONMENT VARIABLES
     MONGO_URI .... local MongoDB or a MongoDB Atlas connection string
     JWT_SECRET ... long random text; use a different one in production
     CLIENT_URL ... the exact frontend address, with no slash at the end
+    TEACHER_PASSWORD  password for the seeded teacher account; required
+                      in production, where the seeder refuses to use the
+                      built-in development default
 
   FRONTEND (frontend/.env)
     VITE_API_URL . the backend address ending in /api
@@ -191,18 +228,10 @@ ENVIRONMENT VARIABLES
 
 KNOWN GAPS
 -------------------------------------------------------------------------------
-  - Unused packages are installed: socket.io-client on the frontend, and
-    helmet, express-rate-limit, joi, mongodb on the backend. Monitoring
-    uses 30-second polling, not websockets.
-  - The drag_drop activity type exists in the database and the grader
-    handles it, but no screen displays it yet.
-  - The teacher password is written directly in the seeder file and
-    reaches production through the repository.
-  - The seeder checks for one username but creates a different one, so on
-    an existing database the new teacher account is never created.
-  - Lesson HTML is trusted rather than cleaned before display.
+  - Real-time monitoring uses 30-second polling, not websockets. This is
+    adequate for a classroom but will not scale to many teachers at once.
+  - Lesson HTML is trusted rather than cleaned before display, though
+    only teachers can now write it.
   - No automated tests are written, though the tools are installed.
-  - The old address /activities/interactive was renamed and now shows a
-    blank page, because the app has no "page not found" screen.
 
 ===============================================================================

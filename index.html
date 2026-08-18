@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MathTech — Project Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<style>
+/* ─────────────────────────────────────────────────────────────
+   MathTech design tokens — the same palette the real app uses
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --board:        #0B1D2E;
+  --board-light:  #122840;
+  --paper:        #F5F0E8;
+  --paper-dark:   #EDE8DE;
+  --white:        #FFFFFF;
+  --ink:          #1A1A2E;
+  --teal:         #4ECDC4;
+  --yellow:       #FFE66D;
+  --yellow-soft:  #FFF8DC;
+  --red:          #FF6B6B;
+  --green:        #6BCB77;
+  --muted:        #8899AA;
+  --muted-strong: #4A5A6A;
+  --grid-line:    #D4CFC5;
+
+  --font-display: 'Fredoka One', cursive;
+  --font-body:    'Nunito', sans-serif;
+  --font-math:    'JetBrains Mono', monospace;
+
+  --grid-sm: 12px;
+  --grid-lg: 60px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Cream graph paper: fine grid + a heavier line every 5 squares */
+body {
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(rgba(26,26,46,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26,26,46,.07) 1px, transparent 1px);
+  background-size:
+    var(--grid-sm) var(--grid-sm), var(--grid-sm) var(--grid-sm),
+    var(--grid-lg) var(--grid-lg), var(--grid-lg) var(--grid-lg);
+  line-height: 1.7;
+  padding-bottom: 4rem;
+}
+
+.wrap { max-width: 940px; margin: 0 auto; padding: 0 1rem; }
+
+/* ── Header ── */
+header {
+  background: var(--board);
+  border-bottom: 3px solid var(--ink);
+  padding: 2.5rem 1rem 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+header img { width: 260px; max-width: 78%; height: auto; margin: 0 auto .8rem; display: block; }
+header .fallback {
+  display: none; font-family: var(--font-display); font-size: 2.4rem; color: var(--teal);
+}
+header p { font-family: var(--font-body); color: var(--paper); font-size: .98rem; }
+header .tagline { color: var(--teal); font-family: var(--font-math); font-size: .78rem; margin-top: .5rem; }
+
+/* ── Section titles ── */
+h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: .5px;
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: .4rem;
+  margin: 2.5rem 0 1.2rem;
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+}
+h2 .chip {
+  font-family: var(--font-math); font-size: .68rem; font-weight: 700;
+  background: var(--board); color: var(--teal);
+  border: 1px solid var(--ink); padding: .15rem .5rem; white-space: nowrap;
+}
+h3 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 400; margin-bottom: .5rem; }
+
+/* ── Cards ── */
+.card {
+  background-color: var(--white);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-sm) var(--grid-sm);
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 1.1rem;
+}
+.chalk {
+  background: var(--board); color: var(--paper);
+  border: 3px solid var(--teal); box-shadow: 3px 3px 0 var(--ink);
+  padding: 1.1rem;
+}
+.chalk h3 { color: var(--teal); }
+
+.grid { display: grid; gap: 1rem; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+/* ── Stat tiles ── */
+.stat { text-align: center; padding: 1rem .6rem; }
+.stat .n { font-family: var(--font-display); font-size: 1.9rem; line-height: 1; }
+.stat .l { font-family: var(--font-math); font-size: .68rem; color: var(--muted-strong); margin-top: .35rem; }
+
+/* ── Tables ── */
+.scroll { overflow-x: auto; border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); background: var(--white); }
+table { border-collapse: collapse; width: 100%; min-width: 460px; }
+th, td { padding: .6rem .8rem; text-align: left; border-bottom: 2px solid var(--paper-dark); font-size: .9rem; }
+th { background: var(--board); color: var(--teal); font-family: var(--font-math); font-size: .72rem; text-transform: uppercase; letter-spacing: .5px; }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: var(--paper); }
+td code, .mono { font-family: var(--font-math); font-size: .82rem; }
+
+/* ── Lists ── */
+ul.tick { list-style: none; }
+ul.tick li { padding-left: 1.4rem; position: relative; margin-bottom: .45rem; font-size: .92rem; }
+ul.tick li::before {
+  content: '▸'; position: absolute; left: 0; color: var(--teal); font-weight: 700;
+}
+ul.plain { padding-left: 1.2rem; }
+ul.plain li { margin-bottom: .45rem; font-size: .92rem; }
+
+/* ── Flow diagram ── */
+.flow { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.step {
+  font-family: var(--font-math); font-size: .74rem; font-weight: 700;
+  background: var(--white); border: 2px solid var(--ink); padding: .3rem .55rem; white-space: nowrap;
+}
+.step.hi { background: var(--teal); }
+.arrow { color: var(--muted); font-weight: 700; }
+
+/* ── Code block ── */
+pre {
+  background: var(--board); color: var(--paper);
+  border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+  padding: .9rem 1rem; overflow-x: auto;
+  font-family: var(--font-math); font-size: .8rem; line-height: 1.7;
+}
+pre .c { color: var(--muted); }
+pre .k { color: var(--teal); }
+
+/* ── Notice ── */
+.notice {
+  background: var(--yellow-soft); border: 2px dashed var(--muted);
+  padding: .7rem .9rem; font-size: .88rem;
+}
+
+/* ── Palette swatches ── */
+.sw { display: flex; flex-wrap: wrap; gap: .5rem; }
+.sw div { width: 74px; }
+.sw i { display: block; height: 42px; border: 2px solid var(--ink); }
+.sw span { font-family: var(--font-math); font-size: .6rem; display: block; margin-top: .25rem; text-align: center; }
+
+/* ── Tabs (the only JS on the page) ── */
+.tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+.tab {
+  font-family: var(--font-display); font-size: .85rem; cursor: pointer;
+  background: var(--white); color: var(--ink);
+  border: 2px solid var(--ink); box-shadow: 2px 2px 0 var(--ink);
+  padding: .4rem .9rem; transition: transform .1s, box-shadow .1s;
+}
+.tab:active { transform: translate(2px,2px); box-shadow: none; }
+.tab[aria-selected="true"] { background: var(--teal); }
+.panel[hidden] { display: none; }
+
+footer {
+  margin-top: 3rem; padding-top: 1.2rem; border-top: 3px solid var(--ink);
+  font-size: .82rem; color: var(--muted-strong); text-align: center;
+}
+footer .mono { display: block; margin-top: .3rem; font-size: .72rem; }
+
+@media (max-width: 560px) {
+  header { padding: 1.8rem 1rem 1.5rem; }
+  h2 { font-size: 1.25rem; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <img src="frontend/src/assets/logo.png" alt="MathTech"
+       onerror="this.style.display='none';document.getElementById('fb').style.display='block'" />
+  <div class="fallback" id="fb">MathTech</div>
+  <p>A Digital Workbook for Senior High School Mathematics</p>
+  <p class="tagline">MERN &middot; React + Vite &middot; Express + MongoDB</p>
+</header>
+
+<div class="wrap">
+
+  <!-- ── AT A GLANCE ─────────────────────────────────────── -->
+  <div class="grid g3">
+    <div class="card stat"><div class="n" id="s1">4</div><div class="l">topics</div></div>
+    <div class="card stat"><div class="n" id="s2">56</div><div class="l">activities</div></div>
+    <div class="card stat"><div class="n" id="s3">6</div><div class="l">collections</div></div>
+    <div class="card stat"><div class="n" id="s4">8</div><div class="l">API groups</div></div>
+  </div>
+
+  <!-- ── WHAT IT IS ──────────────────────────────────────── -->
+  <h2>What it is <span class="chip">overview</span></h2>
+  <div class="chalk">
+    <p>MathTech is a web-based digital workbook for Mathematics. Students read
+    comic-style lessons, answer graded quizzes, and write a reflection for each
+    topic. Teachers decide when each topic opens, and monitor every student's
+    progress, scores and reflections.</p>
+  </div>
+
+  <div class="grid g2" style="margin-top:1rem">
+    <div class="card">
+      <h3>Student</h3>
+      <ul class="tick">
+        <li>Reads comic-style lessons</li>
+        <li>Answers practice and graded activities</li>
+        <li>Writes and edits a reflection per topic</li>
+        <li>Sees scores, correct answers and explanations</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Teacher</h3>
+      <ul class="tick">
+        <li>Opens or schedules each topic</li>
+        <li>Monitors class averages and per-student scores</li>
+        <li>Reads each student's reflection per topic</li>
+        <li>Seeded account only — registration always makes a student</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── BUILT FROM ──────────────────────────────────────── -->
+  <h2>What it is built from <span class="chip">stack</span></h2>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true"  data-p="fe">Frontend</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="be">Backend</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="ho">Hosting</button>
+  </div>
+
+  <div class="panel" id="fe">
+    <div class="scroll"><table>
+      <thead><tr><th>Piece</th><th>Choice</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>UI library</td><td class="mono">React 18</td><td>component model for comic panels and activity types</td></tr>
+        <tr><td>Build tool</td><td class="mono">Vite 5</td><td>fast dev server; produces a static bundle</td></tr>
+        <tr><td>Routing</td><td class="mono">React Router 6</td><td>client-side routes, guarded by role</td></tr>
+        <tr><td>Server state</td><td class="mono">Axios</td><td>one instance that attaches the JWT to every request</td></tr>
+        <tr><td>Local state</td><td class="mono">Redux Toolkit + Context</td><td>Redux for submissions, Context for auth and topic</td></tr>
+        <tr><td>Icons</td><td class="mono">lucide-react</td><td>no emojis anywhere in the UI</td></tr>
+        <tr><td>Styling</td><td class="mono">plain CSS</td><td>no framework; CSS tokens drive the whole theme</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="panel" id="be" hidden>
+    <div class="scroll"><table>
+      <thead><tr><th>Piece</th><th>Choice</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Runtime</td><td class="mono">Node.js 18+</td><td>ES modules throughout</td></tr>
+        <tr><td>Framework</td><td class="mono">Express 4</td><td>REST API only, no server-rendered views</td></tr>
+        <tr><td>Database</td><td class="mono">MongoDB + Mongoose 8</td><td>schema per collection, with validation</td></tr>
+        <tr><td>Auth</td><td class="mono">jsonwebtoken</td><td>stateless, 7-day expiry, no session store</td></tr>
+        <tr><td>Passwords</td><td class="mono">bcryptjs</td><td>hashed in a Mongoose pre-save hook</td></tr>
+        <tr><td>Config</td><td class="mono">dotenv</td><td>five variables, documented in .env.example</td></tr>
+        <tr><td>CORS</td><td class="mono">cors</td><td>strict allow-list built from CLIENT_URL</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="panel" id="ho" hidden>
+    <div class="scroll"><table>
+      <thead><tr><th>Part</th><th>Host</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Frontend</td><td class="mono">Vercel</td><td>static build; rewrites all paths to index.html</td></tr>
+        <tr><td>Backend</td><td class="mono">Render</td><td>render.yaml pins the build and start commands</td></tr>
+        <tr><td>Database</td><td class="mono">MongoDB Atlas</td><td>cloud cluster</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- ── STUDENT FLOW ────────────────────────────────────── -->
+  <h2>Student flow <span class="chip">journey</span></h2>
+  <div class="card">
+    <div class="flow">
+      <span class="step">Login</span><span class="arrow">→</span>
+      <span class="step hi">Topics</span><span class="arrow">→</span>
+      <span class="step">Competencies</span><span class="arrow">→</span>
+      <span class="step">Lesson</span><span class="arrow">→</span>
+      <span class="step hi">Reflection</span><span class="arrow">→</span>
+      <span class="step">Practice</span><span class="arrow">→</span>
+      <span class="step hi">Independent Activity</span><span class="arrow">→</span>
+      <span class="step">Feedback</span><span class="arrow">→</span>
+      <span class="step">Review</span><span class="arrow">→</span>
+      <span class="step">Progress</span>
+    </div>
+  </div>
+
+  <!-- ── FEATURES ────────────────────────────────────────── -->
+  <h2>Key features <span class="chip">how it works</span></h2>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Topics locked by default</h3>
+      <p style="font-size:.9rem">A new topic, a fresh deployment or a server restart never exposes
+      content. Every topic stays closed until the teacher opens it or picks a date.
+      The choice is saved and survives restarts, and can be edited any time.</p>
+    </div>
+    <div class="card">
+      <h3>Stable topic order</h3>
+      <p style="font-size:.9rem">Topics always appear in curriculum order — Week&nbsp;1 Topic&nbsp;1
+      first — using stored week and topic numbers, never the release date, which
+      would reshuffle the list whenever a schedule changed.</p>
+    </div>
+    <div class="card">
+      <h3>Server-side grading</h3>
+      <p style="font-size:.9rem">The correct answer is never sent to the browser, so it cannot be
+      read from the developer tools. The server re-checks every answer on submit.</p>
+    </div>
+    <div class="card">
+      <h3>Math-aware answers</h3>
+      <p style="font-size:.9rem"><span class="mono">₱1,234.50</span>, <span class="mono">1,234.50</span>
+      and <span class="mono">1234.5</span> all count as the same answer, with a small
+      tolerance for centavo rounding.</p>
+    </div>
+    <div class="card">
+      <h3>Comic-style lessons</h3>
+      <p style="font-size:.9rem">Lessons are authored as numbered panels with character dialogue and
+      rendered as real comic panels with speech bubbles and portraits. New content
+      becomes comic-style automatically.</p>
+    </div>
+    <div class="card">
+      <h3>Reflection per topic</h3>
+      <p style="font-size:.9rem">Students write a reflection in their own words and can edit it any
+      time. They are told plainly that the teacher can read it. No student can read
+      or edit another student's writing.</p>
+    </div>
+  </div>
+
+  <!-- ── CONTENT ─────────────────────────────────────────── -->
+  <h2>Content <span class="chip">4 topics</span></h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Week</th><th>Topic</th><th>Subject</th><th>Items</th></tr></thead>
+    <tbody id="topics"></tbody>
+  </table></div>
+  <p class="notice" style="margin-top:1rem">Each topic ships with a 6-panel comic discussion, about 9 key
+  concepts, 4 worked examples, 4 practice items and 10 graded items. Every answer key
+  was verified by submitting it through the live grading engine and confirming 100%.</p>
+
+  <!-- ── DATABASE ────────────────────────────────────────── -->
+  <h2>Database <span class="chip">6 collections</span></h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Model</th><th>Holds</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">User</td><td>fullname, username, email, hashed password, role</td></tr>
+      <tr><td class="mono">Module</td><td>one topic: lesson, objectives, competencies, examples, release date, week &amp; topic number</td></tr>
+      <tr><td class="mono">Activity</td><td>question, choices, correct answer, explanation &mdash; type is one of
+          <span class="mono">multiple_choice</span>, <span class="mono">fill_blank</span>,
+          <span class="mono">true_false</span></td></tr>
+      <tr><td class="mono">Submission</td><td>graded answers, score, percentage, attempt number</td></tr>
+      <tr><td class="mono">Progress</td><td>completed sections, attempts</td></tr>
+      <tr><td class="mono">Reflection</td><td>one written reflection per student per topic</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ── DESIGN ──────────────────────────────────────────── -->
+  <h2>Design system <span class="chip">theme</span></h2>
+  <div class="card">
+    <h3>Palette</h3>
+    <div class="sw" id="sw"></div>
+    <h3 style="margin-top:1.2rem">Type</h3>
+    <ul class="tick">
+      <li><span style="font-family:var(--font-display)">Fredoka One</span> — headings</li>
+      <li><span style="font-family:var(--font-body)">Nunito</span> — body text</li>
+      <li><span class="mono">JetBrains Mono</span> — numbers, equations, code-style labels</li>
+    </ul>
+    <p style="margin-top:.8rem;font-size:.9rem">Hard offset shadows (3px, no blur), no rounded corners,
+    lucide icons only, and no emojis anywhere in the interface.</p>
+  </div>
+
+  <!-- ── RUNNING ─────────────────────────────────────────── -->
+  <h2>Running locally <span class="chip">setup</span></h2>
+  <pre><span class="c"># Requires Node.js 18+ and MongoDB on localhost:27017</span>
+
+<span class="k">cd</span> backend                 <span class="k">cd</span> frontend
+npm install               npm install
+<span class="c">cp .env.example .env</span>      <span class="c">cp .env.example .env</span>
+npm run dev               npm run dev
+<span class="c">→ localhost:5000</span>          <span class="c">→ localhost:5173</span></pre>
+  <p class="notice" style="margin-top:1rem">On first start the backend creates the teacher account and all
+  four topics. <strong>All topics begin locked</strong> — open them from the teacher's Schedule page.</p>
+
+  <!-- ── GAPS ────────────────────────────────────────────── -->
+  <h2>Known gaps <span class="chip">honest list</span></h2>
+  <div class="card">
+    <ul class="plain">
+      <li>Real-time monitoring uses 30-second polling, not websockets — fine for a
+          classroom, but it will not scale to many simultaneous teachers.</li>
+      <li>Lesson HTML is trusted rather than sanitised, though only teachers can write it.</li>
+      <li>No automated tests, though jest and supertest are installed.</li>
+    </ul>
+  </div>
+
+  <footer>
+    MathTech — Digital Workbook for Mathematics
+    <span class="mono">Full-stack: Jovanny De Leon &middot; Content: Dorie Jean Justiniana</span>
+    <span class="mono" id="built"></span>
+  </footer>
+</div>
+
+<script>
+/* ── Topic table, built from data so it stays easy to edit ── */
+var TOPICS = [
+  { w: 1, n: 1, title: 'Sigma Notation and Series',          subject: 'Series &amp; summation' },
+  { w: 1, n: 2, title: 'Percentage Change and Inflation',    subject: 'Percentage change' },
+  { w: 2, n: 3, title: 'Profit and Loss',                    subject: 'Business math' },
+  { w: 2, n: 4, title: 'Deductions, Tax and Overtime Pay',   subject: 'Payroll math' }
+];
+
+document.getElementById('topics').innerHTML = TOPICS.map(function (t) {
+  return '<tr><td class="mono">Week ' + t.w + '</td>' +
+         '<td><strong>Topic ' + t.n + '</strong> — ' + t.title + '</td>' +
+         '<td>' + t.subject + '</td>' +
+         '<td class="mono">4 + 10</td></tr>';
+}).join('');
+
+/* ── Stat tiles ── */
+document.getElementById('s1').textContent = TOPICS.length;
+document.getElementById('s2').textContent = TOPICS.length * 14;   // 4 practice + 10 graded
+
+/* ── Palette swatches ── */
+var PALETTE = [
+  ['--board','board'], ['--paper','paper'], ['--teal','teal'],
+  ['--yellow','yellow'], ['--red','red'], ['--green','green'], ['--ink','ink']
+];
+document.getElementById('sw').innerHTML = PALETTE.map(function (p) {
+  return '<div><i style="background:var(' + p[0] + ')"></i><span>' + p[1] + '</span></div>';
+}).join('');
+
+/* ── Tabs ── */
+var tabs = document.querySelectorAll('.tab');
+Array.prototype.forEach.call(tabs, function (tab) {
+  tab.addEventListener('click', function () {
+    Array.prototype.forEach.call(tabs, function (t) {
+      t.setAttribute('aria-selected', String(t === tab));
+      document.getElementById(t.dataset.p).hidden = (t !== tab);
+    });
+  });
+});
+
+/* ── Footer stamp ── */
+document.getElementById('built').textContent =
+  'Overview generated ' + new Date().toLocaleDateString(undefined,
+    { year: 'numeric', month: 'long', day: 'numeric' });
+</script>
+
+</body>
+</html>

@@ -34,7 +34,7 @@ const ActivitySchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ['multiple_choice', 'fill_blank', 'true_false', 'drag_drop'],
+            enum: ['multiple_choice', 'fill_blank', 'true_false'],
             requred: true,
         },
         question: {

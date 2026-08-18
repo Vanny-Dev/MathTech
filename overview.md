@@ -60,7 +60,7 @@ DigitalWorkbookNavigation/
 │       │   ├── seeder.js       seeds the teacher account
 │       │   ├── seedHelper.js   shared, idempotent content seeding
 │       │   └── seedTopic{N}Week{M}.js   one file per topic
-│       ├── models/             User · Module · Activity · Submission · Progress
+│       ├── models/             User · Module · Activity · Submission · Progress · Reflection
 │       ├── controllers/        one per resource
 │       ├── routes/             one per resource
 │       ├── middleware/         protect · teacherOnly · studentOnly · errorHandler
@@ -87,7 +87,7 @@ DigitalWorkbookNavigation/
 
 ## Data model
 
-Five Mongoose collections.
+Six Mongoose collections.
 
 | Model | Holds | Notes |
 |---|---|---|
@@ -96,8 +96,11 @@ Five Mongoose collections.
 | **Activity** | question, type, choices, correctAnswer, explanation, points, order, comic config | `correctAnswer` is never sent to the browser |
 | **Submission** | graded answers, totalScore, maxScore, percentage, attempt | created server-side on submit |
 | **Progress** | `completedSections{}`, lastVisited, attempts | unique per user + module |
+| **Reflection** | the student's written reflection on one topic | unique per user + module; editable at any time |
 
-Activity types: `multiple_choice`, `fill_blank`, `true_false`, `drag_drop`.
+Activity types: `multiple_choice`, `fill_blank`, `true_false`. Every one of
+these has a UI component and a grader branch — the schema does not accept a
+type the app cannot render.
 
 ---
 
@@ -106,7 +109,8 @@ Activity types: `multiple_choice`, `fill_blank`, `true_false`, `drag_drop`.
 ### Student flow
 
 ```
-Login → Topics → pick a topic → Competencies → Lesson
+Login → Topics → pick a topic → Competencies
+      → Lesson (Discussion · Concepts · Examples · Reflection)
       → Practice (unscored) → Independent Activity (graded)
       → Feedback (score, answers, explanations) → Review → Progress
 ```
@@ -127,7 +131,12 @@ and the string `"True"` the UI sends.
 
 ### Release scheduling
 
-Each topic carries an optional `releaseDate`. Before it passes:
+Topics are **closed by default**. A newly seeded or newly created module has no
+`releaseDate` and stays locked until a teacher opens it or picks a date, so a
+restart or a new topic never exposes content early. "Open now" stores the
+current timestamp rather than clearing the field, so it survives restarts.
+
+While a topic is locked:
 
 - students still **see** the topic and a live countdown
 - the lesson and quiz return **423 Locked** — enforced in the API, not the UI
@@ -213,6 +222,7 @@ On first start the backend seeds the teacher account and all four topics.
 | `MONGO_URI` | local MongoDB or an Atlas SRV string |
 | `JWT_SECRET` | long random string; use a different one in production |
 | `CLIENT_URL` | exact frontend origin, no trailing slash |
+| `TEACHER_PASSWORD` | password for the seeded teacher; required in production |
 
 **frontend/.env**
 
@@ -237,21 +247,10 @@ because Render's free tier sleeps after 15 minutes idle.
 
 Recorded honestly so nobody rediscovers them the hard way.
 
-- **Unused dependencies.** `socket.io-client` (frontend) and `helmet`,
-  `express-rate-limit`, `joi`, `mongodb` (backend) are installed but never
-  imported. Real-time updates use 30-second polling, not websockets.
-- **`drag_drop` is not implemented in the UI.** The type exists in the schema
-  and the grader handles it, but no activity component renders it.
-- **The teacher password is hard-coded** in `config/seeder.js` and reaches
-  production through the repo. It should move to an environment variable.
-- **The seeder's existence check and the account it creates use different
-  usernames**, so on a database that already has the old teacher the new one is
-  never created.
+- **Real-time updates use 30-second polling**, not websockets. Fine for a
+  classroom, but it will not scale to many simultaneous teachers.
 - **`discussion` is rendered with `dangerouslySetInnerHTML`.** Module writes are
   now `teacherOnly`, which closes the injection path, but the content is still
   trusted rather than sanitised.
 - **No automated test suite.** `jest` and `supertest` are installed; no tests
   are written.
-- **Removed URLs are not redirected.** `/activities/interactive` was renamed to
-  `/activities/independent`; the old path renders a blank page because the app
-  has no 404 route.

@@ -19,6 +19,7 @@ import DiscussionPage            from '../pages/Lesson/DiscussionPage.jsx';
 import ConceptsPage              from '../pages/Lesson/ConceptsPage.jsx';
 import ExamplesPage              from '../pages/Lesson/ExamplesPage.jsx';
 import ReflectionPage            from '../pages/Lesson/ReflectionPage.jsx';
+import NotFoundPage              from '../pages/NotFoundPage.jsx';
 import PracticeExercisesPage     from '../pages/Activities/PracticeExercisesPage.jsx';
 import IndependentActivityPage   from '../pages/Activities/IndependentActivityPage.jsx';
 import ViewScorePage             from '../pages/Feedback/ViewScorePage.jsx';
@@ -103,7 +104,7 @@ export default function AppRouter() {
       <Route path="/teacher/monitor/:moduleId/student/:studentId" element={<TeacherRoute><MainLayout><StudentDetail /></MainLayout></TeacherRoute>} />
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

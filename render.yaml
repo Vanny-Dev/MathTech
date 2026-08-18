@@ -34,3 +34,8 @@ services:
       # No trailing slash. Comma-separated for more than one.
       - key: CLIENT_URL
         sync: false
+
+      # Required in production — the seeder refuses to create the teacher
+      # account with the built-in development password.
+      - key: TEACHER_PASSWORD
+        sync: false
