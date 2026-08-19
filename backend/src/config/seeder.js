@@ -10,10 +10,10 @@ import User from '../models/User.js';
  */
 const seedTeacher = async () => {
   try {
-    const username = process.env.TEACHER_USERNAME || 'doriejean';
-    const password = process.env.TEACHER_PASSWORD || 'jeandorie123';
-    const fullname = process.env.TEACHER_FULLNAME || 'Dorie Jean L. Justiniana';
-    const email    = process.env.TEACHER_EMAIL    || 'doriejean@gmail.com';
+    const username = process.env.TEACHER_USERNAME || 'vannydev';
+    const password = process.env.TEACHER_PASSWORD || 'vannynabila';
+    const fullname = process.env.TEACHER_FULLNAME || 'Jovanny De Leon';
+    const email    = process.env.TEACHER_EMAIL    || 'vannydev@gmail.com';
 
     // Look for the same username we are about to create, so the guard and the
     // account can never drift apart.
