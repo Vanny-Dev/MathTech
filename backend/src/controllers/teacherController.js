@@ -182,3 +182,53 @@ export const getClassSummary = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc    Delete one or more student accounts, with everything they own
+// @route   POST /api/teacher/students/delete   body: { studentIds: [...] }
+// @access  Private (Teacher only)
+export const deleteStudents = async (req, res, next) => {
+  try {
+    const ids = Array.isArray(req.body?.studentIds) ? req.body.studentIds : [];
+
+    if (ids.length === 0) {
+      return res.status(400).json({ message: 'No students selected' });
+    }
+
+    // Only ever delete students. A teacher must not be able to delete
+    // themselves or another teacher through this endpoint, even if a
+    // teacher id is passed in by hand.
+    const targets = await User.find({ _id: { $in: ids }, role: 'student' }).select('_id fullname');
+
+    if (targets.length === 0) {
+      return res.status(404).json({ message: 'No matching student accounts found' });
+    }
+
+    const targetIds = targets.map((t) => t._id);
+
+    // Remove owned records FIRST. Leaving them behind orphans documents whose
+    // populated userId resolves to null, which breaks the teacher monitor for
+    // every other student too.
+    const [subs, progs, refls] = await Promise.all([
+      Submission.deleteMany({ userId: { $in: targetIds } }),
+      Progress.deleteMany({ userId: { $in: targetIds } }),
+      Reflection.deleteMany({ userId: { $in: targetIds } }),
+    ]);
+
+    const { deletedCount } = await User.deleteMany({ _id: { $in: targetIds }, role: 'student' });
+
+    res.json({
+      message: `Deleted ${deletedCount} student${deletedCount === 1 ? '' : 's'}`,
+      deleted: deletedCount,
+      deletedNames: targets.map((t) => t.fullname),
+      alsoRemoved: {
+        submissions: subs.deletedCount,
+        progress:    progs.deletedCount,
+        reflections: refls.deletedCount,
+      },
+      // ids the caller asked for that were not students (or did not exist)
+      skipped: ids.length - targets.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

@@ -24,7 +24,7 @@ export default function ConceptsPage() {
 
   return (
     <div>
-      <SectionTitle icon={Sigma} label="∴">Concepts</SectionTitle>
+      <SectionTitle icon={Sigma}>Concepts</SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxWidth: '640px' }}>
         {concepts.map((c, i) => (
           <div key={i} className="comic-card" style={{ borderLeft: '6px solid var(--teal)' }}>

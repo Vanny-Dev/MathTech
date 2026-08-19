@@ -61,7 +61,7 @@ export default function TeacherMonitor() {
 
   return (
     <div>
-      <SectionTitle icon={Activity} label="live">Student Monitor</SectionTitle>
+      <SectionTitle icon={Activity}>Student Monitor</SectionTitle>
 
       {/* Controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.2rem' }}>

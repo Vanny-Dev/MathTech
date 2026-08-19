@@ -39,7 +39,7 @@ export default function ReviewIncorrectPage() {
 
   return (
     <div>
-      <SectionTitle icon={SearchX} label="Δ">Review Incorrect Answers</SectionTitle>
+      <SectionTitle icon={SearchX}>Review Incorrect Answers</SectionTitle>
 
       {items.length === 0 ? (
         <div className="comic-card-blue" style={{ maxWidth: '500px' }}>

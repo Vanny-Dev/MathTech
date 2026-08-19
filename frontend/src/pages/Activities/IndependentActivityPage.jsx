@@ -63,7 +63,7 @@ export default function IndependentActivityPage() {
   if (loading) return <Loader text="Loading activities..." />;
   if (activities.length === 0) return (
     <div>
-      <SectionTitle icon={NotebookPen} label="Q₁..Qₙ">Independent Activity</SectionTitle>
+      <SectionTitle icon={NotebookPen}>Independent Activity</SectionTitle>
       <div className="comic-card">No activities found for this module.</div>
     </div>
   );
@@ -75,7 +75,7 @@ export default function IndependentActivityPage() {
 
   return (
     <div>
-      <SectionTitle icon={NotebookPen} label="Q₁..Qₙ">Independent Activity</SectionTitle>
+      <SectionTitle icon={NotebookPen}>Independent Activity</SectionTitle>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>

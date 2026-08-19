@@ -37,7 +37,7 @@ export default function TopicsPage() {
 
   return (
     <div>
-      <SectionTitle icon={BookMarked} label="topics[]">Topics</SectionTitle>
+      <SectionTitle icon={BookMarked}>Topics</SectionTitle>
 
       {modules.length === 0 ? (
         <div className="comic-card" style={{ maxWidth: '600px' }}>

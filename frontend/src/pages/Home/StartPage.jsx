@@ -7,7 +7,7 @@ export default function StartPage() {
   const navigate = useNavigate();
   return (
     <div>
-      <SectionTitle icon={Play} label="f(x)">Start</SectionTitle>
+      <SectionTitle icon={Play}>Start</SectionTitle>
       <div className="comic-card" style={{ maxWidth: '600px' }}>
         <h2 style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.4rem', marginBottom: '1rem' }}>
           How to use this workbook

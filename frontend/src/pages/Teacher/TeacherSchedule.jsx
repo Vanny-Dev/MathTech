@@ -58,7 +58,7 @@ export default function TeacherSchedule() {
 
   return (
     <div>
-      <SectionTitle icon={CalendarClock} label="release">Topic Schedule</SectionTitle>
+      <SectionTitle icon={CalendarClock}>Topic Schedule</SectionTitle>
 
       <div className="chalk-card" style={{ maxWidth: '820px', marginBottom: '1.25rem' }}>
         <p style={{ fontFamily: 'Nunito, sans-serif', lineHeight: 1.7 }}>

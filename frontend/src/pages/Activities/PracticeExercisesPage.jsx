@@ -32,7 +32,7 @@ export default function PracticeExercisesPage() {
   if (loading) return <Loader text="Loading practice..." />;
   if (activities.length === 0) return (
     <div>
-      <SectionTitle icon={PencilRuler} label="practice[]">Practice Exercises</SectionTitle>
+      <SectionTitle icon={PencilRuler}>Practice Exercises</SectionTitle>
       <div className="comic-card">No practice exercises yet for this module.</div>
       <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={() => navigate('/activities/independent')}>
         Go to Independent <ArrowRight size={15} />
@@ -46,7 +46,7 @@ export default function PracticeExercisesPage() {
 
   return (
     <div>
-      <SectionTitle icon={PencilRuler} label="practice[]">Practice Exercises</SectionTitle>
+      <SectionTitle icon={PencilRuler}>Practice Exercises</SectionTitle>
 
       {/* Counter */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>

@@ -26,14 +26,12 @@ export default function DeveloperPage() {
     {
       icon: Code2,
       role: 'Full-stack Developer',
-      math: 'dev',
       name: developer || 'Jovanny De Leon',
       note: 'Built and maintains the MathTech',
     },
     {
       icon: BookOpen,
       role: 'Content Developer',
-      math: 'content',
       name: CONTENT_DEVELOPER,
       note: 'Wrote the lessons, examples and activities',
     },
@@ -41,7 +39,7 @@ export default function DeveloperPage() {
 
   return (
     <div>
-      <SectionTitle icon={Code2} label="dev">About</SectionTitle>
+      <SectionTitle icon={Code2}>About</SectionTitle>
 
       <div style={s.list}>
         {credits.map((c) => {
@@ -53,7 +51,6 @@ export default function DeveloperPage() {
               </span>
 
               <div style={s.body}>
-                <span className="formula-chip" style={s.chip}>{c.math}</span>
                 <div style={s.role}>{c.role}</div>
                 <div style={s.name}>{c.name}</div>
                 <div style={s.note}>{c.note}</div>
@@ -99,10 +96,6 @@ const s = {
   body: {
     flex: 1,
     minWidth: 0,
-  },
-  chip: {
-    fontSize: '0.62rem',
-    marginBottom: '0.35rem',
   },
   role: {
     fontFamily: 'JetBrains Mono, monospace',

@@ -28,7 +28,7 @@ export default function DiscussionPage() {
 
   return (
     <div style={{ width: '100%' }}>
-      <SectionTitle icon={BookText} label="∫">Discussion</SectionTitle>
+      <SectionTitle icon={BookText}>Discussion</SectionTitle>
       <div style={{ maxWidth: '720px', marginBottom: '1.25rem', overflowWrap: 'anywhere' }}>
         <ComicDiscussion html={lesson?.discussion} />
       </div>

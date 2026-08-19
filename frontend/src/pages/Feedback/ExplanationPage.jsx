@@ -25,7 +25,7 @@ export default function ExplanationPage() {
 
   return (
     <div>
-      <SectionTitle icon={Lightbulb} label="// why">Explanation / Solution</SectionTitle>
+      <SectionTitle icon={Lightbulb}>Explanation / Solution</SectionTitle>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '680px' }}>
         {answers.map((item, i) => (

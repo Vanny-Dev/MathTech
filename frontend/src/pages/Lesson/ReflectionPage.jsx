@@ -73,7 +73,7 @@ export default function ReflectionPage() {
   if (!moduleId) {
     return (
       <div>
-        <SectionTitle icon={PenLine} label="reflect">Reflection</SectionTitle>
+        <SectionTitle icon={PenLine}>Reflection</SectionTitle>
         <div className="comic-card" style={{ maxWidth: '640px' }}>
           Choose a topic first, then come back to write your reflection.{' '}
           <button className="btn btn-teal" style={{ marginTop: '0.6rem' }} onClick={() => navigate('/topics')}>
@@ -92,7 +92,7 @@ export default function ReflectionPage() {
 
   return (
     <div>
-      <SectionTitle icon={PenLine} label="reflect">Reflection</SectionTitle>
+      <SectionTitle icon={PenLine}>Reflection</SectionTitle>
 
       <div className="chalk-card" style={{ maxWidth: '720px', marginBottom: '1.25rem' }}>
         <p style={{ fontFamily: 'Nunito, sans-serif', lineHeight: 1.7, marginBottom: '0.6rem' }}>

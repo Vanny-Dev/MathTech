@@ -37,7 +37,7 @@ export default function TeacherDashboard() {
 
   return (
     <div>
-      <SectionTitle icon={LayoutDashboard} label="Σ class">Teacher Dashboard</SectionTitle>
+      <SectionTitle icon={LayoutDashboard}>Teacher Dashboard</SectionTitle>
 
       {/* Welcome */}
       <div className="comic-card-blue" style={{ marginBottom: '1.5rem' }}>

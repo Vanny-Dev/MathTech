@@ -21,7 +21,7 @@ export default function CompletedActivitiesPage() {
 
   return (
     <div>
-      <SectionTitle icon={CheckCircle2} label="Σ done">Completed Activities</SectionTitle>
+      <SectionTitle icon={CheckCircle2}>Completed Activities</SectionTitle>
 
       {completed.length === 0 ? (
         <div className="comic-card" style={{ maxWidth: '500px' }}>

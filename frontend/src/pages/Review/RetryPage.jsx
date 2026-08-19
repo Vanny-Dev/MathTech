@@ -64,7 +64,7 @@ export default function RetryPage() {
 
   return (
     <div>
-      <SectionTitle icon={RotateCcw} label="attempt++">Retry Activities</SectionTitle>
+      <SectionTitle icon={RotateCcw}>Retry Activities</SectionTitle>
 
       <div style={{
         background: 'var(--yellow)',

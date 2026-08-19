@@ -27,7 +27,7 @@ export default function ObjectivesPage() {
 
   return (
     <div>
-      <SectionTitle icon={ListChecks} label="O₁..Oₙ">Learning Objectives</SectionTitle>
+      <SectionTitle icon={ListChecks}>Learning Objectives</SectionTitle>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxWidth: '640px' }}>
         {objectives.length === 0 ? (

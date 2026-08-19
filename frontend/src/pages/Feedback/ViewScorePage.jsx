@@ -21,7 +21,7 @@ export default function ViewScorePage() {
 
   if (!result) return (
     <div>
-      <SectionTitle icon={Percent} label="Σ/n">Score</SectionTitle>
+      <SectionTitle icon={Percent}>Score</SectionTitle>
       <div className="comic-card">
         No submission found.{' '}
         <button className="btn btn-blue" style={{ marginTop: '0.5rem' }} onClick={() => navigate('/activities/independent')}>
@@ -41,7 +41,7 @@ export default function ViewScorePage() {
 
   return (
     <div>
-      <SectionTitle icon={Percent} label="Σ/n">Your Score</SectionTitle>
+      <SectionTitle icon={Percent}>Your Score</SectionTitle>
 
       <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         {/* Score ring */}

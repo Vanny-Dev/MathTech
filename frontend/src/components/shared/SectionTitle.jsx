@@ -2,12 +2,12 @@ import React from 'react';
 
 /**
  * Page heading in the mathematics theme:
- *   [icon badge]  Title           [monospace formula chip]
+ *   [icon badge]  Title
  *
  * Replaces the old emoji-prefixed <h1 className="section-title"> pattern.
  * Icons are lucide-react components — no emojis anywhere in the UI.
  */
-export default function SectionTitle({ icon: Icon, label, children }) {
+export default function SectionTitle({ icon: Icon, children }) {
   return (
     <h1 className="section-title" style={s.wrap}>
       {Icon && (
@@ -16,7 +16,6 @@ export default function SectionTitle({ icon: Icon, label, children }) {
         </span>
       )}
       <span style={s.text}>{children}</span>
-      {label && <span className="formula-chip" style={s.chip}>{label}</span>}
     </h1>
   );
 }
@@ -43,8 +42,5 @@ const s = {
   text: {
     flex: 1,
     minWidth: 0,
-  },
-  chip: {
-    fontSize: '0.7rem',
   },
 };

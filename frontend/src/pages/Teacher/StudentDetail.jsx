@@ -36,7 +36,7 @@ export default function StudentDetail() {
         <ArrowLeft size={15} /> Back
       </button>
 
-      <SectionTitle icon={User} label="id">{student.fullname}</SectionTitle>
+      <SectionTitle icon={User}>{student.fullname}</SectionTitle>
 
       {/* Student info card */}
       <div className="comic-card-blue" style={{ maxWidth: '500px', marginBottom: '1.5rem' }}>

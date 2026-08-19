@@ -24,7 +24,7 @@ export default function CorrectAnswersPage() {
   if (loading) return <Loader text="Loading answers..." />;
   if (!submissionId) return (
     <div>
-      <SectionTitle icon={CheckCheck} label="x =">Correct Answers</SectionTitle>
+      <SectionTitle icon={CheckCheck}>Correct Answers</SectionTitle>
       <div className="comic-card">No submission found.
         <button className="btn btn-blue" style={{ marginTop: '0.5rem' }} onClick={() => navigate('/activities/independent')}>Go to Activities</button>
       </div>
@@ -33,7 +33,7 @@ export default function CorrectAnswersPage() {
 
   return (
     <div>
-      <SectionTitle icon={CheckCheck} label="x =">Correct Answers</SectionTitle>
+      <SectionTitle icon={CheckCheck}>Correct Answers</SectionTitle>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '680px' }}>
         {answers.map((item, i) => (

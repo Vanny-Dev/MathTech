@@ -5,7 +5,7 @@ import SectionTitle from '../../components/shared/SectionTitle.jsx';
 export default function AboutPage() {
   return (
     <div>
-      <SectionTitle icon={Info} label="info">About</SectionTitle>
+      <SectionTitle icon={Info}>About</SectionTitle>
       <div className="comic-card" style={{ maxWidth: '600px' }}>
         <h2 style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.3rem', marginBottom: '0.8rem' }}>
           MathTech — Mathematics

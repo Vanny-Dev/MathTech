@@ -34,7 +34,7 @@ export default function PerformanceSummaryPage() {
 
   return (
     <div>
-      <SectionTitle icon={BarChart3} label="x̄">Performance Summary</SectionTitle>
+      <SectionTitle icon={BarChart3}>Performance Summary</SectionTitle>
 
       {/* Best score banner */}
       {best?.percentage !== undefined && (

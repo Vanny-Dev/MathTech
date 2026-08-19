@@ -24,7 +24,7 @@ export default function ExamplesPage() {
 
   return (
     <div>
-      <SectionTitle icon={SquareFunction} label="e.g.">Examples</SectionTitle>
+      <SectionTitle icon={SquareFunction}>Examples</SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', maxWidth: '640px' }}>
         {examples.map((ex, i) => (
           <div key={i} className="comic-card">
