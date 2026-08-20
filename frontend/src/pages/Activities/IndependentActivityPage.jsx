@@ -8,6 +8,7 @@ import { useWorkbook } from '../../context/WorkbookContext.jsx';
 import { setAnswer, setSubmissionResult, resetSubmission } from '../../store/submissionSlice.js';
 import { markSection } from '../../store/workbookSlice.js';
 import ComicStrip from '../../components/comic/ComicStrip.jsx';
+import SlideDeck from '../../components/comic/SlideDeck.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 
 export default function IndependentActivityPage() {
@@ -68,57 +69,57 @@ export default function IndependentActivityPage() {
     </div>
   );
 
-  const activity       = activities[current];
   const total          = activities.length;
   const answeredCount  = Object.keys(localAnswers).length;
   const allAnswered    = answeredCount === total;
 
   return (
     <div>
-      <SectionTitle icon={NotebookPen}>Independent Activity</SectionTitle>
-
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <div style={styles.counter}>
-          Question <span style={{ color: 'var(--teal)' }}>{current + 1}</span> of {total}
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <div style={styles.pill}>
-            {answeredCount}/{total} answered
-          </div>
-          <div style={{ ...styles.pill, background: 'var(--teal)' }}>GRADED</div>
-        </div>
-      </div>
+      {/* Counter and status ride in the header bar rather than a row of their own */}
+      <SectionTitle
+        icon={NotebookPen}
+        meta={
+          <>
+            <span className="page-head-count">Question <b>{current + 1}</b> of {total}</span>
+            <span className="page-pill">{answeredCount}/{total} answered</span>
+            <span className="page-pill teal">GRADED</span>
+          </>
+        }
+      >
+        Independent Activity
+      </SectionTitle>
 
       {/* Answer dots */}
-      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+      <div className="q-dots">
         {activities.map((a, i) => (
           <button
             key={a._id}
+            type="button"
+            className={`q-dot ${localAnswers[a._id] !== undefined ? 'answered' : ''} ${i === current ? 'on' : ''}`}
             onClick={() => setCurrent(i)}
-            style={{
-              width: '32px', height: '32px',
-              border: '2px solid var(--ink)',
-              background: localAnswers[a._id] !== undefined
-                ? 'var(--yellow)'
-                : i === current ? 'var(--teal)' : 'var(--white)',
-              fontFamily: 'Fredoka One, cursive',
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-            }}
+            aria-label={`Go to question ${i + 1}`}
           >
             {i + 1}
           </button>
         ))}
       </div>
 
-      {/* Comic strip */}
-      <div style={{ maxWidth: '640px' }}>
-        <ComicStrip
-          key={activity._id}
-          activity={activity}
-          onAnswered={handleAnswered}
-        />
+      {/* Questions slide the way the lesson pages do */}
+      <div>
+        <SlideDeck
+          count={total}
+          index={current}
+          onIndexChange={setCurrent}
+          instantKey={moduleId}
+        >
+          {(i) => (
+            <ComicStrip
+              activity={activities[i]}
+              number={i + 1}
+              onAnswered={handleAnswered}
+            />
+          )}
+        </SlideDeck>
       </div>
 
       {/* Navigation */}
@@ -146,18 +147,3 @@ export default function IndependentActivityPage() {
   );
 }
 
-const styles = {
-  counter: {
-    fontFamily: 'Fredoka One, cursive',
-    fontSize: '1.1rem',
-    letterSpacing: '1px',
-  },
-  pill: {
-    background: 'var(--yellow)',
-    border: '2px solid var(--ink)',
-    padding: '0.2rem 0.8rem',
-    fontFamily: 'Fredoka One, cursive',
-    fontSize: '0.85rem',
-    letterSpacing: '1px',
-  },
-};

@@ -7,11 +7,10 @@
 .math-card,
 .comic-card {
   position: relative;
+  /* Solid, not graph paper. Grid lines behind body text and equations were
+     flagged as unnecessary background detail; the page itself still carries
+     the workbook texture. */
   background-color: var(--white);
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: var(--grid-sm) var(--grid-sm);
   border: var(--border);
   box-shadow: var(--shadow);
   padding: 1.25rem;
@@ -92,10 +91,6 @@
   padding: 1rem;
   gap: 1rem;
   background-color: var(--white);
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: var(--grid-sm) var(--grid-sm);
 }
 
 .comic-panel:last-child {
@@ -241,14 +236,90 @@ select.comic-input {
 }
 
 /* ── Section title — with equals-rule underline ── */
+/* ── Page header bar ──
+   One compact row carrying the page title and, where a page has them, its
+   counter and status pills. Deliberately light, so it reads as page chrome
+   against the dark panel headers that mark actual content below it. */
+.page-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  background: var(--white);
+  border: var(--border);
+  box-shadow: var(--shadow);
+  padding: 0.35rem 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.page-head-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--teal);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+}
+
+.page-head-title {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: clamp(0.98rem, 2vw, 1.2rem);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.page-head-meta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+/* On a phone the meta drops to its own line instead of squeezing the title */
+@media (max-width: 620px) {
+  .page-head-meta {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* Counter that lives in the header bar */
+.page-head-count {
+  font-family: var(--font-math);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted-strong);
+  white-space: nowrap;
+}
+.page-head-count b { color: var(--teal); }
+
+/* Status pill: smaller than the old standalone ones, since it now sits inline */
+.page-pill {
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  padding: 0.1rem 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.page-pill.teal { background: var(--teal); }
+
+/* Kept for any page still using the old class directly */
 .section-title {
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: 1.4rem;
   letter-spacing: 0.5px;
   color: var(--ink);
-  border-bottom: var(--border);
-  padding-bottom: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 /* ── Formula chip — inline code-style math tag ── */
@@ -289,16 +360,23 @@ select.comic-input {
   gap: 1.25rem;
 }
 
-.cd-panel {
+/* The carousel frame is the card now — border and shadow live here so they
+   stay put while the slides move behind them, and so the offset shadow is
+   never clipped by the overflow that hides the off-screen slides. */
+.cd-frame {
+  position: relative;
   border: var(--border);
   box-shadow: var(--shadow);
   background-color: var(--white);
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: var(--grid-sm) var(--grid-sm);
   overflow: hidden;
+  touch-action: pan-y;   /* vertical scrolling stays the browser's; sideways is ours */
+
+  /* Height is set from the showing slide, so it eases between questions of
+     different lengths rather than snapping. */
+  transition: height 0.42s cubic-bezier(0.32, 0.72, 0.24, 1);
 }
+
+.cd-frame.instant { transition: none; }
 
 .cd-panel-head {
   display: flex;
@@ -339,6 +417,62 @@ select.comic-input {
   flex-direction: column;
   gap: 0.7rem;
   padding: 0.9rem;
+
+  /* Every page is exactly the same size, like a real book.
+     Authored panels run from roughly 270px to 550px of content, so letting the
+     page size itself moved the Back/Next buttons — and the section links under
+     them — by ~280px as the learner paged through. One fixed height keeps the
+     controls in place: short pages simply have blank space at the bottom, and a
+     long one scrolls inside its own frame instead of pushing the page around.
+     clamp() lets a tall window show more without ever breaking a short one. */
+  height: clamp(300px, 50vh, 470px);
+  overflow-y: auto;
+}
+
+@media (max-width: 700px) {
+  .cd-panel-body { height: clamp(260px, 52vh, 420px); }
+}
+
+/* The deck stretches every slide to the tallest of them, which keeps the frame
+   a constant height so the Prev/Next buttons never move. Left uncapped, though,
+   that meant a short fill-in-the-blank was padded out to the height of a
+   four-option word problem — about 150px of dead white space. Capping the
+   scroll area brings the frame down to roughly the height of the shorter
+   questions and lets the long ones scroll instead. */
+.cd-act-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0.9rem;
+
+  /* Sizes to its own content. The cap is only there so an unusually long
+     question scrolls instead of growing the frame past the fold. */
+  min-height: 0;
+  max-height: 62vh;
+  overflow-y: auto;
+}
+
+/* The action row sits outside the scroll, so a learner working through a long
+   question can always see the button that submits it. */
+.cd-act-foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.9rem;
+  border-top: var(--border);
+  background: var(--white);
+}
+
+/* The question is the one thing on the slide that should carry weight, so it
+   takes the full width rather than the 92% a conversational aside gets. */
+.cd-ask .cd-line { max-width: 100%; }
+.cd-ask .cd-bubble {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 /* ── One line of dialogue ── */
@@ -456,3 +590,111 @@ select.comic-input {
   width: 120px;
   height: 120px;
 }
+
+/* ══ Page-turn transition for the lesson discussion ═══════════
+   The discussion used to stack every panel in one very long scroll.
+   It now shows one panel at a time and animates like turning a page. */
+/* ══ Carousel ══════════════════════════════════════════════
+   Every panel is laid out in one horizontal row and the row slides. Moving a
+   single element means the outgoing and incoming pages travel together, which
+   is what makes it read as one continuous motion rather than a swap.
+
+   The track's own width is one slide, so translateX(-100%) advances by exactly
+   one page and lands on the same pixel the slide was laid out at — no
+   half-pixel text. Deliberately a 2D transform: a 3D one would pin the track to
+   a GPU layer and its text would be resampled from a bitmap, which is what made
+   the previous animation blurry at fractional zoom levels. */
+.cd-track {
+  display: flex;
+  align-items: flex-start;   /* each slide keeps its own height */
+  width: 100%;
+  transition: transform 0.52s cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+
+/* Set while the content is being swapped for another topic, so the track jumps
+   to page one instead of racing backwards through every page. */
+.cd-track.instant { transition: none; }
+
+.cd-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+
+  /* Neighbours sit slightly back and dimmed, so during the slide the arriving
+     page visibly comes forward into focus. The active slide carries no
+     transform at all, which keeps its text sharp at rest. */
+  transform: scale(0.93);
+  opacity: 0.35;
+  transition:
+    transform 0.52s cubic-bezier(0.32, 0.72, 0.24, 1),
+    opacity   0.42s ease-out;
+}
+
+.cd-slide.on {
+  transform: none;
+  opacity: 1;
+}
+
+/* Some learners get motion sick, and the OS setting is there to be honoured */
+@media (prefers-reduced-motion: reduce) {
+  .cd-frame,
+  .cd-track,
+  .cd-slide { transition: none; }
+  .cd-slide { transform: none; opacity: 1; }
+}
+
+/* ── Question dots ──
+   The numbered jump buttons above an activity. Sized in one place because the
+   two pages that use them were both hard-coding 32px, which pushed the tenth
+   question onto a second line on a phone. */
+.q-dots {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.q-dot {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid var(--ink);
+  background: var(--white);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.q-dot.answered { background: var(--yellow); }
+.q-dot.on       { background: var(--teal); transform: scale(1.08); }
+
+/* Ten of them have to fit across a phone without wrapping */
+@media (max-width: 560px) {
+  .q-dots { gap: 0.25rem; }
+  .q-dot  { width: 28px; height: 28px; font-size: 0.75rem; }
+}
+
+@media (max-width: 380px) {
+  .q-dots { gap: 0.2rem; }
+  .q-dot  { width: 24px; height: 24px; font-size: 0.68rem; }
+}
+
+/* Page indicator dots */
+.cd-dots { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.cd-dot {
+  width: 10px; height: 10px;
+  border: 2px solid var(--ink);
+  background: var(--white);
+  padding: 0; cursor: pointer;
+}
+.cd-dot {
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.cd-dot.on   { background: var(--teal); transform: scale(1.25); }
+.cd-dot.seen { background: var(--muted); }

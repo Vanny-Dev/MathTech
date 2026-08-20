@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { SquareFunction, ArrowRight } from 'lucide-react';
 import SectionTitle from '../../components/shared/SectionTitle.jsx';
+import WorkedExample from '../../components/shared/WorkedExample.jsx';
 import { useNavigate } from 'react-router-dom';
 import { getLessonApi } from '../../api/moduleApi.js';
 import { useWorkbook } from '../../context/WorkbookContext.jsx';
@@ -25,17 +26,18 @@ export default function ExamplesPage() {
   return (
     <div>
       <SectionTitle icon={SquareFunction}>Examples</SectionTitle>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', maxWidth: '640px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', maxWidth: '640px', marginInline: 'auto' }}>
         {examples.map((ex, i) => (
           <div key={i} className="comic-card">
             <div style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--teal)' }}>
-              Example {i + 1}: {ex.title}
+              {/* The stored title already begins with "Example N" */}
+                {ex.title}
             </div>
             {ex.image && (
               <img src={ex.image} alt={ex.title}
                 style={{ maxWidth: '100%', border: '2px solid var(--ink)', marginBottom: '0.5rem' }} />
             )}
-            <p style={{ fontFamily: 'Nunito, sans-serif', lineHeight: 1.8 }}>{ex.content}</p>
+            <WorkedExample content={ex.content} />
           </div>
         ))}
       </div>

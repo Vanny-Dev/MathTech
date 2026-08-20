@@ -7,6 +7,7 @@ import { getActivitiesApi, submitAnswersApi } from '../../api/activityApi.js';
 import { useWorkbook } from '../../context/WorkbookContext.jsx';
 import { setSubmissionResult, resetSubmission } from '../../store/submissionSlice.js';
 import ComicStrip from '../../components/comic/ComicStrip.jsx';
+import SlideDeck from '../../components/comic/SlideDeck.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 
 export default function RetryPage() {
@@ -64,7 +65,17 @@ export default function RetryPage() {
 
   return (
     <div>
-      <SectionTitle icon={RotateCcw}>Retry Activities</SectionTitle>
+      <SectionTitle
+        icon={RotateCcw}
+        meta={
+          <>
+            <span className="page-head-count">Question <b>{current + 1}</b> of {total}</span>
+            <span className="page-pill">{answeredCount}/{total} answered</span>
+          </>
+        }
+      >
+        Retry Activities
+      </SectionTitle>
 
       <div style={{
         background: 'var(--yellow)',
@@ -73,41 +84,39 @@ export default function RetryPage() {
         fontFamily: 'Nunito, sans-serif',
         fontWeight: 700,
         marginBottom: '1rem',
-        maxWidth: '640px',
+        maxWidth: '640px', marginInline: 'auto',
       }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Zap size={16} strokeWidth={2.5} /> This is a new attempt — all questions will be graded fresh.</span>
       </div>
 
-      {/* Counter */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', maxWidth: '640px' }}>
-        <div style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.1rem', letterSpacing: '1px' }}>
-          Question <span style={{ color: 'var(--teal)' }}>{current + 1}</span> of {total}
-        </div>
-        <div style={{ fontFamily: 'Fredoka One, cursive', fontSize: '0.9rem', color: 'var(--muted)' }}>
-          {answeredCount}/{total} answered
-        </div>
-      </div>
 
       {/* Answer dots */}
-      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+      <div className="q-dots">
         {activities.map((a, i) => (
-          <button key={a._id} onClick={() => setCurrent(i)} style={{
-            width: '32px', height: '32px',
-            border: '2px solid var(--ink)',
-            background: localAnswers[a._id] !== undefined ? 'var(--yellow)' : i === current ? 'var(--teal)' : 'var(--white)',
-            fontFamily: 'Fredoka One, cursive', fontSize: '0.85rem', cursor: 'pointer',
-          }}>
+          <button
+            key={a._id}
+            type="button"
+            className={`q-dot ${localAnswers[a._id] !== undefined ? 'answered' : ''} ${i === current ? 'on' : ''}`}
+            onClick={() => setCurrent(i)}
+            aria-label={`Go to question ${i + 1}`}
+          >
             {i + 1}
           </button>
         ))}
       </div>
 
-      {/* Comic strip */}
-      {activity && (
-        <div style={{ maxWidth: '640px' }}>
-          <ComicStrip key={`retry-${activity._id}`} activity={activity} onAnswered={handleAnswered} />
-        </div>
-      )}
+      {/* Questions slide the way the lesson pages do */}
+      <div>
+        <SlideDeck count={total} index={current} onIndexChange={setCurrent}>
+          {(i) => (
+            <ComicStrip
+              activity={activities[i]}
+              number={i + 1}
+              onAnswered={handleAnswered}
+            />
+          )}
+        </SlideDeck>
+      </div>
 
       {/* Navigation */}
       <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>

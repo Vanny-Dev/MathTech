@@ -38,7 +38,7 @@ export default function PerformanceSummaryPage() {
 
       {/* Best score banner */}
       {best?.percentage !== undefined && (
-        <div className="comic-card-blue" style={{ maxWidth: '640px', marginBottom: '1.5rem' }}>
+        <div className="comic-card-blue" style={{ maxWidth: '640px', marginInline: 'auto', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'Fredoka One, cursive', fontSize: '1.6rem' }}>
             <Trophy size={26} strokeWidth={2.5} /> BEST SCORE: <span className="mono">{best.percentage}%</span>
           </div>
@@ -49,7 +49,7 @@ export default function PerformanceSummaryPage() {
       )}
 
       {/* Stats row */}
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem', maxWidth: '640px' }}>
+      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem', maxWidth: '640px', marginInline: 'auto' }}>
         {[
           { label: 'Total Attempts', value: totalAttempts, color: 'var(--teal)' },
           { label: 'Best Score',     value: `${best?.percentage ?? 0}%`, color: 'var(--yellow)' },
@@ -63,7 +63,7 @@ export default function PerformanceSummaryPage() {
       </div>
 
       {/* Attempt history table */}
-      <div className="comic-card" style={{ maxWidth: '640px', padding: 0, overflow: 'hidden' }}>
+      <div className="comic-card" style={{ maxWidth: '640px', marginInline: 'auto', padding: 0, overflow: 'hidden' }}>
         <div style={{
           background: 'var(--ink)', color: 'var(--white)',
           padding: '0.6rem 1rem',

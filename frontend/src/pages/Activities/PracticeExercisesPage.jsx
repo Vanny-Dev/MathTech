@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { getActivitiesApi } from '../../api/activityApi.js';
 import { useWorkbook } from '../../context/WorkbookContext.jsx';
 import ComicStrip from '../../components/comic/ComicStrip.jsx';
+import SlideDeck from '../../components/comic/SlideDeck.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 
 export default function PracticeExercisesPage() {
@@ -40,29 +41,40 @@ export default function PracticeExercisesPage() {
     </div>
   );
 
-  const activity = activities[current];
   const total    = activities.length;
   const done     = Object.keys(answered).length === total;
 
   return (
     <div>
-      <SectionTitle icon={PencilRuler}>Practice Exercises</SectionTitle>
+      {/* Counter and status ride in the header bar rather than a row of their own */}
+      <SectionTitle
+        icon={PencilRuler}
+        meta={
+          <>
+            <span className="page-head-count">Question <b>{current + 1}</b> of {total}</span>
+            <span className="page-pill">PRACTICE — unscored</span>
+          </>
+        }
+      >
+        Practice Exercises
+      </SectionTitle>
 
-      {/* Counter */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <div style={styles.counter}>
-          Question <span style={{ color: 'var(--teal)' }}>{current + 1}</span> of {total}
-        </div>
-        <div style={styles.pill}>PRACTICE — unscored</div>
-      </div>
-
-      {/* Comic strip */}
-      <div style={{ maxWidth: '640px' }}>
-        <ComicStrip
-          key={activity._id}
-          activity={activity}
-          onAnswered={handleAnswered}
-        />
+      {/* Questions slide the way the lesson pages do */}
+      <div>
+        <SlideDeck
+          count={total}
+          index={current}
+          onIndexChange={setCurrent}
+          instantKey={moduleId}
+        >
+          {(i) => (
+            <ComicStrip
+              activity={activities[i]}
+              number={i + 1}
+              onAnswered={handleAnswered}
+            />
+          )}
+        </SlideDeck>
       </div>
 
       {/* Prev / Next */}
@@ -84,18 +96,3 @@ export default function PracticeExercisesPage() {
   );
 }
 
-const styles = {
-  counter: {
-    fontFamily: 'Fredoka One, cursive',
-    fontSize: '1.1rem',
-    letterSpacing: '1px',
-  },
-  pill: {
-    background: 'var(--yellow)',
-    border: '2px solid var(--ink)',
-    padding: '0.2rem 0.8rem',
-    fontFamily: 'Fredoka One, cursive',
-    fontSize: '0.85rem',
-    letterSpacing: '1px',
-  },
-};

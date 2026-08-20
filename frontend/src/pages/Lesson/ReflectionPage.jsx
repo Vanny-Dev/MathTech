@@ -74,7 +74,7 @@ export default function ReflectionPage() {
     return (
       <div>
         <SectionTitle icon={PenLine}>Reflection</SectionTitle>
-        <div className="comic-card" style={{ maxWidth: '640px' }}>
+        <div className="comic-card" style={{ maxWidth: '640px', marginInline: 'auto' }}>
           Choose a topic first, then come back to write your reflection.{' '}
           <button className="btn btn-teal" style={{ marginTop: '0.6rem' }} onClick={() => navigate('/topics')}>
             Go to Topics <ArrowRight size={15} />

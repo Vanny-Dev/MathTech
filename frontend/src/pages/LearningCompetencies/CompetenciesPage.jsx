@@ -25,7 +25,7 @@ export default function CompetenciesPage() {
   return (
     <div>
       <SectionTitle icon={Target}>Learning Competencies</SectionTitle>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxWidth: '640px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxWidth: '640px', marginInline: 'auto' }}>
         {competencies.map((c, i) => (
           <div key={i} className="comic-card-blue" style={{ display: 'flex', gap: '1rem' }}>
             <p style={{ fontFamily: 'Nunito, sans-serif', lineHeight: 1.7 }}>{c}</p>

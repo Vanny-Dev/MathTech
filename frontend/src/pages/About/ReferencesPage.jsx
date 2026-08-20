@@ -23,7 +23,7 @@ export default function ReferencesPage() {
   return (
     <div>
       <SectionTitle icon={Library}>References</SectionTitle>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxWidth: '640px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxWidth: '640px', marginInline: 'auto' }}>
         {references.length === 0 ? (
           <div className="comic-card">No references listed for this module.</div>
         ) : (

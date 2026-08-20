@@ -24,6 +24,11 @@ export default function MainLayout({ children }) {
     setIsSidebarOpen(isMobileView ? false : true);
   }, [location.pathname, isMobileView]);
 
+  // A student reads one column of questions and explanation, so that column is
+  // held to a comfortable measure and centred. A teacher works with rosters and
+  // progress tables, which need the room, so those pages get a wide column.
+  const isTeacherPage = location.pathname.startsWith('/teacher');
+
   return (
     <div style={styles.root}>
       <Sidebar isOpen={isMobileView ? isSidebarOpen : true} onClose={() => setIsSidebarOpen(false)} isMobile={isMobileView} />
@@ -32,7 +37,14 @@ export default function MainLayout({ children }) {
       )}
       <div style={styles.content}>
         <Navbar onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)} />
-        <main className="graph-paper" style={styles.main}>{children}</main>
+        <main className="graph-paper" style={styles.main}>
+          {/* The graph paper still covers the full width; the reading column
+              inside it is centred, so a wide laptop does not leave every page
+              hugging the left edge with a third of the screen empty. */}
+          <div style={{ ...styles.column, maxWidth: isTeacherPage ? '1240px' : '700px' }}>
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );
@@ -64,5 +76,9 @@ const styles = {
     // would give the sticky Navbar nothing to stick against.
     padding: 'clamp(1rem, 2.5vw, 1.5rem)',
     /* background comes from .graph-paper */
+  },
+  column: {
+    width: '100%',
+    marginInline: 'auto',
   },
 };

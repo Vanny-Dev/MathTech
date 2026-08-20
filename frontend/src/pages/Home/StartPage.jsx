@@ -2,9 +2,11 @@ import React from 'react';
 import { Play, ArrowRight } from 'lucide-react';
 import SectionTitle from '../../components/shared/SectionTitle.jsx';
 import { useNavigate } from 'react-router-dom';
+import { useWorkbook } from '../../context/WorkbookContext.jsx';
 
 export default function StartPage() {
   const navigate = useNavigate();
+  const { moduleId } = useWorkbook();
   return (
     <div>
       <SectionTitle icon={Play}>Start</SectionTitle>
@@ -24,9 +26,11 @@ export default function StartPage() {
         <button
           className="btn btn-blue"
           style={{ marginTop: '1.5rem' }}
-          onClick={() => navigate('/competencies')}
+          // Competencies, Lesson and Activities all read the selected topic.
+          // Without one they render empty, so send the student to pick first.
+          onClick={() => navigate(moduleId ? '/competencies' : '/topics')}
         >
-          Start Learning <ArrowRight size={15} />
+          {moduleId ? 'Start Learning' : 'Choose a topic'} <ArrowRight size={15} />
         </button>
       </div>
     </div>

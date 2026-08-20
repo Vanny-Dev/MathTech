@@ -31,7 +31,7 @@ export default function CompletedActivitiesPage() {
           </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxWidth: '640px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxWidth: '640px', marginInline: 'auto' }}>
           {completed.map((sub) => (
             <div key={sub._id} className="comic-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               {/* Module name */}

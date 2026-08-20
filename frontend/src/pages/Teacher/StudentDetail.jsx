@@ -49,7 +49,7 @@ export default function StudentDetail() {
       </div>
 
       {/* Student's reflection on this topic — read only */}
-      <div style={{ maxWidth: '640px', marginBottom: '1.5rem' }}>
+      <div style={{ maxWidth: '640px', marginInline: 'auto', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
           <h2 style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.2rem', letterSpacing: '1px' }}>
             Reflection
@@ -77,7 +77,7 @@ export default function StudentDetail() {
 
       <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         {/* Submission history */}
-        <div style={{ flex: 1, minWidth: '260px', maxWidth: '640px' }}>
+        <div style={{ flex: 1, minWidth: '260px', maxWidth: '640px', marginInline: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
             <h2 style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.2rem', letterSpacing: '1px' }}>
               Submission History

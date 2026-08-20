@@ -1,46 +1,26 @@
 import React from 'react';
 
 /**
- * Page heading in the mathematics theme:
- *   [icon badge]  Title
+ * Page heading: a single compact bar rather than a large stacked heading.
  *
- * Replaces the old emoji-prefixed <h1 className="section-title"> pattern.
- * Icons are lucide-react components — no emojis anywhere in the UI.
+ *   [icon] Independent Activity        Question 3 of 10  2/10  GRADED
+ *
+ * The old heading set the title at 2rem over a full-width rule, which on a
+ * laptop pushed the actual work down the page — and pages that also carried a
+ * counter and status pills spent a second row on those. Both now share one
+ * bar, through the optional `meta` slot, so a learner opening a page sees the
+ * question rather than the chrome above it.
  */
-export default function SectionTitle({ icon: Icon, children }) {
+export default function SectionTitle({ icon: Icon, meta, children }) {
   return (
-    <h1 className="section-title" style={s.wrap}>
+    <header className="page-head">
       {Icon && (
-        <span style={s.badge}>
-          <Icon size={20} strokeWidth={2.5} />
+        <span className="page-head-icon">
+          <Icon size={17} strokeWidth={2.6} />
         </span>
       )}
-      <span style={s.text}>{children}</span>
-    </h1>
+      <h1 className="page-head-title">{children}</h1>
+      {meta && <div className="page-head-meta">{meta}</div>}
+    </header>
   );
 }
-
-const s = {
-  wrap: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.7rem',
-    flexWrap: 'wrap',
-  },
-  badge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '38px',
-    height: '38px',
-    background: 'var(--teal)',
-    color: 'var(--ink)',
-    border: '2px solid var(--ink)',
-    boxShadow: '2px 2px 0 var(--ink)',
-    flexShrink: 0,
-  },
-  text: {
-    flex: 1,
-    minWidth: 0,
-  },
-};

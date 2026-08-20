@@ -15,8 +15,8 @@ body {
   background-image:
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(rgba(26, 26, 46, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(26, 26, 46, 0.07) 1px, transparent 1px);
+    linear-gradient(rgba(26, 26, 46, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 46, 0.05) 1px, transparent 1px);
   background-size:
     var(--grid-sm) var(--grid-sm),
     var(--grid-sm) var(--grid-sm),
@@ -60,8 +60,8 @@ a {
   background-image:
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(rgba(26, 26, 46, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(26, 26, 46, 0.07) 1px, transparent 1px);
+    linear-gradient(rgba(26, 26, 46, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 46, 0.05) 1px, transparent 1px);
   background-size:
     var(--grid-sm) var(--grid-sm),
     var(--grid-sm) var(--grid-sm),

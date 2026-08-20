@@ -1,7 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, BookOpenCheck } from 'lucide-react';
+import SlideDeck from './SlideDeck.jsx';
+import SpeechLine from './SpeechLine.jsx';
 
 /**
- * Renders a module's `discussion` HTML as real comic panels.
+ * Renders a module's `discussion` HTML as comic panels, one page at a time.
  *
  * The authored HTML follows a fixed shape:
  *
@@ -9,24 +12,15 @@ import React, { useMemo, useState } from 'react';
  *   <p><strong>Miguel:</strong> dialogue…</p>
  *   <p>narration or a centred formula</p>
  *
- * Each <h3> starts a new panel; a paragraph that opens with "<strong>Name:</strong>"
- * becomes a speech bubble attributed to that speaker, and everything else becomes
- * a narration/formula block inside the panel.
+ * Each <h3> starts a panel; a paragraph opening with "<strong>Name:</strong>"
+ * becomes a speech bubble, everything else becomes a narration block.
  *
- * Falls back to plain rendering when the content has no <h3> panel markers, so
- * older or hand-written modules still display.
+ * Panels used to be stacked, which made a six-panel lesson a very long scroll.
+ * They are now a carousel — one panel on screen at a time, advanced by the
+ * buttons, the dots, the arrow keys, or a swipe. Falls back to plain rendering
+ * when the content has no <h3> markers, so older or hand-written modules still
+ * display.
  */
-
-// Who sits on which side, how their bubble looks, and which portrait to use
-// once the artwork exists in /assets/characters/.
-const SPEAKERS = {
-  teacher: { side: 'left',  bg: 'var(--board)',       fg: 'var(--paper)', name: 'var(--teal)', border: 'var(--teal)', art: 'teacher'        },
-  miguel:  { side: 'right', bg: 'var(--white)',       fg: 'var(--ink)',   name: 'var(--ink)',  border: 'var(--ink)',  art: 'dark_idle'      },
-  ana:     { side: 'right', bg: 'var(--yellow-soft)', fg: 'var(--ink)',   name: 'var(--ink)',  border: 'var(--ink)',  art: 'light_thinking' },
-};
-const DEFAULT_SPEAKER = { side: 'right', bg: 'var(--white)', fg: 'var(--ink)', name: 'var(--ink)', border: 'var(--ink)', art: null };
-
-const styleFor = (name) => SPEAKERS[name.trim().toLowerCase()] || DEFAULT_SPEAKER;
 
 function parsePanels(html) {
   if (typeof window === 'undefined' || !html) return null;
@@ -52,7 +46,6 @@ function parsePanels(html) {
       panels.push(current);
     }
 
-    // Dialogue looks like: <strong>Miguel:</strong> rest of the line
     const strong = node.querySelector(':scope > strong');
     const isDialogue =
       node.tagName === 'P' &&
@@ -82,12 +75,28 @@ function splitHeading(heading) {
 
 export default function ComicDiscussion({ html }) {
   const panels = useMemo(() => parsePanels(html), [html]);
+  const total = panels?.length ?? 0;
+
+  // Every hook runs unconditionally, before any early return — React requires
+  // the same hooks in the same order on every render.
+  const [page, setPage] = useState(0);
+  const topRef = useRef(null);
+
+  // Switching topic replaces the content; start that lesson at its first page
+  useEffect(() => { setPage(0); }, [html]);
+
+  const goTo = useCallback((target) => {
+    setPage(target);
+    // Bring the top into view so a page never opens halfway down the screen
+    requestAnimationFrame(() =>
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    );
+  }, []);
 
   if (!html) {
     return <p style={{ fontFamily: 'Nunito, sans-serif' }}>No discussion content yet.</p>;
   }
 
-  // Unpanelled content — render as before rather than dropping it
   if (!panels) {
     return (
       <div
@@ -98,72 +107,99 @@ export default function ComicDiscussion({ html }) {
     );
   }
 
-  return (
-    <div className="comic-discussion">
-      {panels.map((panel, i) => {
-        const { num, title } = splitHeading(panel.heading);
-        return (
-          <section key={i} className="cd-panel">
-            <header className="cd-panel-head">
-              <span className="cd-panel-num">{num ?? i + 1}</span>
-              <h3 className="cd-panel-title">{title}</h3>
-            </header>
-
-            <div className="cd-panel-body">
-              {panel.blocks.map((b, j) =>
-                b.kind === 'line' ? (
-                  <SpeechLine key={j} speaker={b.speaker} html={b.html} />
-                ) : (
-                  <div
-                    key={j}
-                    className="cd-note rich-text"
-                    dangerouslySetInnerHTML={{ __html: b.html }}
-                  />
-                )
-              )}
-            </div>
-          </section>
-        );
-      })}
-    </div>
-  );
-}
-
-function SpeechLine({ speaker, html }) {
-  const s = styleFor(speaker);
-  const initial = speaker.trim().charAt(0).toUpperCase();
-  const [artFailed, setArtFailed] = useState(false);
-
-  // Show the real portrait once the PNG exists; until then, the initial badge.
-  const showArt = s.art && !artFailed;
+  const current = Math.min(page, total - 1);
+  const onLast  = current === total - 1;
 
   return (
-    <div className={`cd-line ${s.side === 'left' ? 'cd-left' : 'cd-right'}`}>
-      {showArt ? (
-        <img
-          className="cd-avatar cd-avatar-img"
-          src={`/assets/characters/${s.art}.png`}
-          alt={speaker}
-          onError={() => setArtFailed(true)}
-          style={{ borderColor: s.border }}
-        />
-      ) : (
-        <span
-          className="cd-avatar"
-          style={{ background: s.border, color: s.side === 'left' ? 'var(--board)' : 'var(--white)' }}
-          aria-hidden="true"
-        >
-          {initial}
-        </span>
-      )}
+    <div className="comic-discussion" ref={topRef}>
+      {/* Page indicator */}
+      <div style={pg.bar}>
+        <span style={pg.count}>Page {current + 1} of {total}</span>
+        <div className="cd-dots">
+          {panels.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`cd-dot ${i === current ? 'on' : i < current ? 'seen' : ''}`}
+              onClick={() => goTo(i)}
+              aria-label={`Go to page ${i + 1}`}
+            />
+          ))}
+        </div>
+      </div>
 
-      <div
-        className="cd-bubble"
-        style={{ background: s.bg, color: s.fg, borderColor: s.border, '--cd-tail': s.border }}
-      >
-        <span className="cd-speaker" style={{ color: s.name }}>{speaker}</span>
-        <span className="rich-text" dangerouslySetInnerHTML={{ __html: html }} />
+      <SlideDeck count={total} index={current} onIndexChange={goTo} instantKey={html}>
+        {(i) => {
+          const panel = panels[i];
+          const { num, title } = splitHeading(panel.heading);
+          return (
+            <>
+              <header className="cd-panel-head">
+                <span className="cd-panel-num">{num ?? i + 1}</span>
+                <h3 className="cd-panel-title">{title}</h3>
+              </header>
+
+              <div className="cd-panel-body">
+                {panel.blocks.map((b, j) =>
+                  b.kind === 'line' ? (
+                    <SpeechLine key={j} speaker={b.speaker} html={b.html} />
+                  ) : (
+                    <div
+                      key={j}
+                      className="cd-note rich-text"
+                      dangerouslySetInnerHTML={{ __html: b.html }}
+                    />
+                  )
+                )}
+              </div>
+            </>
+          );
+        }}
+      </SlideDeck>
+
+      {/* Turn controls */}
+      <div style={pg.nav}>
+        <button className="btn btn-outline" style={pg.btn} onClick={() => goTo(current - 1)} disabled={current === 0}>
+          <ChevronLeft size={16} /> Back
+        </button>
+
+        {onLast ? (
+          <span style={pg.done}>
+            <BookOpenCheck size={15} strokeWidth={2.5} /> End of discussion
+          </span>
+        ) : (
+          <button className="btn btn-teal" style={pg.btn} onClick={() => goTo(current + 1)}>
+            Next page <ChevronRight size={16} />
+          </button>
+        )}
       </div>
     </div>
   );
 }
+
+const pg = {
+  bar: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    gap: '0.6rem', flexWrap: 'wrap',
+  },
+  count: {
+    fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem',
+    fontWeight: 700, color: 'var(--muted-strong)',
+  },
+  nav: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    gap: '0.6rem', flexWrap: 'wrap',
+  },
+  btn: { fontSize: '0.9rem', padding: '0.5rem 1rem' },
+  // Replaces the Next button on the last page, so it carries the same padding
+  // and border width — otherwise the shorter label lifts the row by ~10px.
+  done: {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    gap: '0.4rem',
+    fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.88rem',
+    color: 'var(--green)',
+    padding: '0.5rem 1rem',
+    border: '2px solid transparent',
+    lineHeight: 1.4,
+  },
+};

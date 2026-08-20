@@ -29,7 +29,7 @@ export default function ObjectivesPage() {
     <div>
       <SectionTitle icon={ListChecks}>Learning Objectives</SectionTitle>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxWidth: '640px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxWidth: '640px', marginInline: 'auto' }}>
         {objectives.length === 0 ? (
           <div className="comic-card">No objectives found for this module.</div>
         ) : (
