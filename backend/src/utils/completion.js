@@ -53,7 +53,23 @@ export const countAll = (progress) => {
 export const isComplete = (progress) =>
   countRequired(progress) === REQUIRED_SECTIONS.length;
 
-export const statusOf = (progress) => {
-  if (!progress) return 'not_started';
-  return isComplete(progress) ? 'completed' : 'in_progress';
+/**
+ * A student's standing on a topic, taken from the Independent Activity alone.
+ *
+ * Status used to be counted from the sections a student had opened, which
+ * measured the wrong thing: someone could ace the activity and still read as
+ * "In Progress" because they had not opened one more page, while someone who
+ * scored 90% but clicked through everything read as "Completed". The activity
+ * is the work, so the activity decides:
+ *
+ *   no attempt        -> not started
+ *   attempted         -> in progress
+ *   answered perfectly-> completed   (this is also what closes the topic)
+ *
+ * The section counts are still reported, because they are useful detail for a
+ * teacher, but they no longer set the status.
+ */
+export const activityStatusOf = ({ attempts = 0, bestPercentage = null } = {}) => {
+  if (!attempts) return 'not_started';
+  return bestPercentage === 100 ? 'completed' : 'in_progress';
 };

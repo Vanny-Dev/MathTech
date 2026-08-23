@@ -1,6 +1,6 @@
 import Progress   from '../models/Progress.js';
 import Submission  from '../models/Submission.js';
-import { REQUIRED_SECTIONS, countRequired, statusOf } from '../utils/completion.js';
+import { REQUIRED_SECTIONS, countRequired, activityStatusOf } from '../utils/completion.js';
 
 // @desc    Get progress for a user on a module
 // @route   GET /api/progress/:moduleId
@@ -46,6 +46,16 @@ export const markSectionComplete = async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid section name' });
     }
 
+    // Progress belongs to students. A teacher previewing the student pages used
+    // to be given a progress row of their own, and those rows were then counted
+    // as "started" in the class summary — which is how Not Started went
+    // negative. Let the preview work, but record nothing.
+    if (req.user.role !== 'student') {
+      return res.json({
+        completedSections: {}, lastVisited: section, attempts: 0, preview: true,
+      });
+    }
+
     const progress = await Progress.findOneAndUpdate(
       { userId: req.user._id, moduleId: req.params.moduleId },
       {
@@ -87,12 +97,15 @@ export const getPerformanceSummary = async (req, res, next) => {
       { percentage: 0 }
     );
 
-    // Mark progress section complete
-    await Progress.findOneAndUpdate(
-      { userId: req.user._id, moduleId: req.params.moduleId },
-      { $set: { 'completedSections.progress': true, lastVisited: 'progress' } },
-      { upsert: true }
-    );
+    // Same reasoning as markSectionComplete: only a student's own progress is
+    // recorded, so a teacher opening this page leaves no row behind.
+    if (req.user.role === 'student') {
+      await Progress.findOneAndUpdate(
+        { userId: req.user._id, moduleId: req.params.moduleId },
+        { $set: { 'completedSections.progress': true, lastVisited: 'progress' } },
+        { upsert: true }
+      );
+    }
 
     res.json({ summary, best, totalAttempts: submissions.length });
   } catch (err) {
@@ -129,7 +142,11 @@ export const getMyProgress = async (req, res, next) => {
 
     const rowFor = (id, progress, stats) => ({
       moduleId:          id,
-      status:            statusOf(progress),
+      // Same rule the teacher monitor uses: the activity decides.
+      status:            activityStatusOf({
+        attempts:       stats?.attempts ?? 0,
+        bestPercentage: stats?.best?.percentage ?? null,
+      }),
       completedCount:    countRequired(progress),
       requiredTotal:     REQUIRED_SECTIONS.length,
       completedSections: progress?.completedSections ?? {},

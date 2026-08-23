@@ -7,9 +7,26 @@ import {
   ALL_SECTIONS,
   countRequired,
   countAll,
-  isComplete,
-  statusOf,
+  activityStatusOf,
 } from '../utils/completion.js';
+
+/**
+ * Per-student graded record for one module: how many attempts, the latest, and
+ * the best. Built once and shared by the monitor and the class summary so the
+ * two can never disagree.
+ */
+const gradedStatsByStudent = (submissions) => {
+  const stats = {};
+  submissions.forEach((s) => {
+    if (!s.userId) return;   // owner deleted; skip the orphan
+    const id = s.userId._id ? s.userId._id.toString() : s.userId.toString();
+    const row = stats[id] || (stats[id] = { attempts: 0, latest: null, best: null });
+    row.attempts += 1;
+    if (!row.latest || s.attempt > row.latest.attempt) row.latest = s;
+    if (!row.best || s.percentage > row.best.percentage) row.best = s;
+  });
+  return stats;
+};
 
 // @desc    Get all students
 // @route   GET /api/teacher/students
@@ -43,17 +60,9 @@ export const getModuleProgress = async (req, res, next) => {
     const submissions = await Submission.find({ moduleId, isPractice: false })
       .populate('userId', 'fullname username');
 
-    // Build a map: userId -> latest submission.
-    // populate() yields null when the owning user no longer exists, so skip
-    // orphaned records rather than crashing the whole monitor.
-    const submissionMap = {};
-    submissions.forEach((s) => {
-      if (!s.userId) return;
-      const id = s.userId._id.toString();
-      if (!submissionMap[id] || s.attempt > submissionMap[id].attempt) {
-        submissionMap[id] = s;
-      }
-    });
+    // populate() yields null when the owning user no longer exists, so the
+    // helper skips orphaned records rather than crashing the whole monitor.
+    const statsMap = gradedStatsByStudent(submissions);
 
     // Build a map: userId -> progress
     const progressMap = {};
@@ -64,12 +73,11 @@ export const getModuleProgress = async (req, res, next) => {
 
     // Merge into one response per student
     const result = students.map((student) => {
-      const sid        = student._id.toString();
-      const progress   = progressMap[sid] || null;
-      const submission = submissionMap[sid] || null;
+      const sid      = student._id.toString();
+      const progress = progressMap[sid] || null;
+      const stats    = statsMap[sid] || null;
 
-      // Counted against the sections a student must actually work through,
-      // not all seven — see utils/completion.js.
+      // Sections are reported as detail; the status comes from the activity.
       const completedCount = countRequired(progress);
 
       return {
@@ -85,10 +93,18 @@ export const getModuleProgress = async (req, res, next) => {
         sectionsTouched:    countAll(progress),
         totalSections:      ALL_SECTIONS.length,
         lastVisited:        progress?.lastVisited || 'not started',
-        attempts:           progress?.attempts || 0,
-        latestScore:        submission?.percentage || null,
-        latestSubmissionAt: submission?.createdAt || null,
-        status: statusOf(progress),
+
+        // Counted from real submissions rather than the progress counter, so a
+        // reset or an interrupted submit cannot make the two disagree.
+        attempts:           stats?.attempts || 0,
+        latestScore:        stats?.latest?.percentage ?? null,
+        bestScore:          stats?.best?.percentage ?? null,
+        latestSubmissionAt: stats?.latest?.createdAt || null,
+
+        status: activityStatusOf({
+          attempts:       stats?.attempts || 0,
+          bestPercentage: stats?.best?.percentage ?? null,
+        }),
       };
     });
 
@@ -155,13 +171,41 @@ export const getClassSummary = async (req, res, next) => {
   try {
     const { moduleId } = req.params;
 
-    const totalStudents = await User.countDocuments({ role: 'student' });
+    // Counted over the students themselves, not over progress rows.
+    //
+    // "Not started" used to be totalStudents minus the number of progress
+    // documents for the module — but those documents are created for whoever
+    // opens the page, a teacher previewing the student view included. One such
+    // row was enough to push the count past the number of students and show a
+    // negative "Not Started" on the dashboard. Deriving every figure from the
+    // student list keeps them consistent with the cards and non-negative.
+    const students    = await User.find({ role: 'student' }).select('_id');
+    const studentIds  = students.map((s) => s._id);
+    const submissions = await Submission.find({
+      moduleId,
+      isPractice: false,
+      userId: { $in: studentIds },
+    });
 
-    const progressList  = await Progress.find({ moduleId });
-    const submissions   = await Submission.find({ moduleId, isPractice: false });
+    const statsMap = gradedStatsByStudent(submissions);
 
-    const started   = progressList.length;
-    const completed = progressList.filter(isComplete).length;
+    let completed  = 0;
+    let inProgress = 0;
+    let notStarted = 0;
+
+    students.forEach((s) => {
+      const stats = statsMap[s._id.toString()];
+      const status = activityStatusOf({
+        attempts:       stats?.attempts || 0,
+        bestPercentage: stats?.best?.percentage ?? null,
+      });
+      if (status === 'completed') completed += 1;
+      else if (status === 'in_progress') inProgress += 1;
+      else notStarted += 1;
+    });
+
+    const totalStudents = students.length;
+    const started       = completed + inProgress;
 
     const scores      = submissions.map((s) => s.percentage);
     const avgScore    = scores.length
@@ -173,9 +217,9 @@ export const getClassSummary = async (req, res, next) => {
     res.json({
       totalStudents,
       started,
-      notStarted: totalStudents - started,
+      notStarted,
       completed,
-      inProgress: started - completed,
+      inProgress,
       scores: {
         average: avgScore,
         highest: highestScore,
