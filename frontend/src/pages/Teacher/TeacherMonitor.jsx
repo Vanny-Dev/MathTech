@@ -7,10 +7,18 @@ import { getModuleProgressApi } from '../../api/teacherApi.js';
 import Loader from '../../components/shared/Loader.jsx';
 
 
+/**
+ * The three states of a topic's Independent Activity.
+ *
+ * The middle one is deliberately "Answered" rather than "In Progress". A
+ * student who took the activity weeks ago and scored 90% is not still working
+ * on it — the topic simply stays open in case they want to improve, since only
+ * a perfect score closes it. "In Progress" made every one of them look unfinished.
+ */
 const STATUS_COLORS = {
-  completed:   { bg: 'var(--green)', label: 'Completed' },
-  in_progress: { bg: 'var(--yellow)', label: 'In Progress' },
-  not_started: { bg: 'var(--paper-dark)',    label: 'Not Started' },
+  completed:   { bg: 'var(--green)',      label: 'Completed' },
+  in_progress: { bg: 'var(--yellow)',     label: 'Answered' },
+  not_started: { bg: 'var(--paper-dark)', label: 'Not Started' },
 };
 
 export default function TeacherMonitor() {
@@ -135,16 +143,21 @@ export default function TeacherMonitor() {
                   {/* Pushes the score and Detail button to the right */}
                   <div style={{ flex: 1, minWidth: 0 }} />
 
-                  {/* Score */}
+                  {/* Score.
+                      Shows the BEST attempt, which is what the bar draws, what
+                      the line below reports and what decides the badge. It used
+                      to show the latest instead, so a student who scored 90%
+                      and then 50% had a card reading 50% above a bar filled to
+                      90% — the mismatch a teacher would notice first. */}
                   <div style={{ textAlign: 'right', minWidth: '80px' }}>
-                    {s.latestScore !== null ? (
+                    {s.bestScore !== null ? (
                       <div style={{
                         fontFamily: 'Fredoka One, cursive',
                         fontSize: '1.2rem',
-                        color: s.latestScore >= 75 ? 'var(--green)' : 'var(--red)',
+                        color: s.bestScore >= 75 ? 'var(--green)' : 'var(--red)',
                         letterSpacing: '1px',
                       }}>
-                        {s.latestScore}%
+                        {s.bestScore}%
                       </div>
                     ) : (
                       <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.8rem', color: 'var(--muted)' }}>No score</div>
@@ -185,7 +198,13 @@ export default function TeacherMonitor() {
                   <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.2rem' }}>
                     {s.attempts === 0
                       ? 'No attempt yet'
-                      : `Best ${s.bestScore}% • ${s.attempts} attempt${s.attempts !== 1 ? 's' : ''} • ${s.completedCount}/${s.requiredTotal || 5} sections read`}
+                      : [
+                          `Best ${s.bestScore}%`,
+                          // Only worth saying when the newest try was not the best one
+                          s.latestScore !== s.bestScore ? `latest ${s.latestScore}%` : null,
+                          `${s.attempts} attempt${s.attempts !== 1 ? 's' : ''}`,
+                          `${s.completedCount}/${s.requiredTotal || 5} sections read`,
+                        ].filter(Boolean).join(' • ')}
                   </div>
                 </div>
               </div>
