@@ -12,7 +12,7 @@ import ActivityCompleted from '../../components/shared/ActivityCompleted.jsx';
 import AttemptList from '../../components/shared/AttemptList.jsx';
 import { getLatestSubmissionApi } from '../../api/feedbackApi.js';
 import { markActivityStartedApi } from '../../api/progressApi.js';
-import { getSocket } from '../../realtime/socket.js';
+import useActivityPresence from '../../hooks/useActivityPresence.js';
 import SlideDeck from '../../components/comic/SlideDeck.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 
@@ -49,45 +49,31 @@ export default function IndependentActivityPage() {
         setRecord(submission);
         setActivities(list);
 
-        // Opening the questions is what "taking it" means — the answers stay in
-        // the browser until the whole set is submitted, so without this the
-        // server could not tell a student part-way through from one who never
-        // started.
-        //
-        // This fires on every opening, not only a first attempt. Most of a
-        // class has already submitted something, and a student going back in to
-        // improve their score is just as much "taking it now" as a first-timer;
-        // gating this on `!submission` left the teacher's monitor silent for
-        // exactly the students most likely to be retrying.
-        const openForAnswering = list.length > 0 && !submission?.locked;
-
-        if (openForAnswering) {
-          getSocket()?.emit('activity:open', { moduleId, total: list.length });
-
-          // The stored marker is only meaningful before a first submission —
-          // afterwards `attempts` already tells the story.
-          if (!submission) markActivityStartedApi(moduleId).catch(() => {});
+        // The stored marker is only meaningful before a first submission —
+        // afterwards `attempts` already tells the story. Live presence is
+        // handled by useActivityPresence below, for both pages that show these
+        // questions.
+        if (!submission && list.length > 0) {
+          markActivityStartedApi(moduleId).catch(() => {});
         }
       })
       .finally(() => { if (!cancelled) setLoading(false); });
 
-    return () => {
-      cancelled = true;
-      // Closing the tab is covered by the socket disconnecting; this handles
-      // the ordinary case of navigating to another page.
-      getSocket()?.emit('activity:leave');
-    };
+    return () => { cancelled = true; };
   }, [moduleId]);
+
+  // Tell the monitor this student is answering right now
+  const { reportAnswered, reportFinished } = useActivityPresence({
+    moduleId,
+    total: activities.length,
+    active: !loading && !record?.locked && activities.length > 0,
+  });
 
   const handleAnswered = (activityId, givenAnswer) => {
     setLocalAnswers((prev) => {
       const next = { ...prev, [activityId]: givenAnswer };
-      // Report how far along they are, so the monitor can show 3/10 as it
-      // happens. Derived from `next` because setState has not applied yet.
-      getSocket()?.emit('activity:answer', {
-        answered: Object.keys(next).length,
-        total: activities.length,
-      });
+      // Derived from `next` because setState has not applied yet
+      reportAnswered(Object.keys(next).length);
       return next;
     });
     dispatch(setAnswer({ activityId, answer: givenAnswer }));
@@ -106,7 +92,7 @@ export default function IndependentActivityPage() {
         })),
       };
       const { data } = await submitAnswersApi(payload);
-      getSocket()?.emit('activity:leave');
+      reportFinished();
       dispatch(setSubmissionResult(data));
       dispatch(markSection('activities'));
       markComplete('activities');

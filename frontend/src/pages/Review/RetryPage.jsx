@@ -12,6 +12,7 @@ import AttemptList from '../../components/shared/AttemptList.jsx';
 import { getLatestSubmissionApi } from '../../api/feedbackApi.js';
 import SlideDeck from '../../components/comic/SlideDeck.jsx';
 import Loader from '../../components/shared/Loader.jsx';
+import useActivityPresence from '../../hooks/useActivityPresence.js';
 
 export default function RetryPage() {
   const navigate  = useNavigate();
@@ -47,8 +48,20 @@ export default function RetryPage() {
     return () => { cancelled = true; };
   }, [moduleId]);
 
+  // Retry puts the same graded questions in front of the student, so it counts
+  // as taking the activity exactly as the Independent Activity page does.
+  const { reportAnswered, reportFinished } = useActivityPresence({
+    moduleId,
+    total: activities.length,
+    active: !loading && !record?.locked && activities.length > 0,
+  });
+
   const handleAnswered = (activityId, givenAnswer) => {
-    setLocalAnswers((prev) => ({ ...prev, [activityId]: givenAnswer }));
+    setLocalAnswers((prev) => {
+      const next = { ...prev, [activityId]: givenAnswer };
+      reportAnswered(Object.keys(next).length);
+      return next;
+    });
     return null;
   };
 
@@ -64,6 +77,7 @@ export default function RetryPage() {
         })),
       };
       const { data } = await submitAnswersApi(payload);
+      reportFinished();
       dispatch(setSubmissionResult(data));
       navigate('/feedback');
     } catch (err) {
