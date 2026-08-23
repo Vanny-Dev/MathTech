@@ -49,15 +49,24 @@ export default function IndependentActivityPage() {
         setRecord(submission);
         setActivities(list);
 
-        // Opening the questions is what "in progress" means — the answers stay
-        // in the browser until the whole set is submitted, so without this the
+        // Opening the questions is what "taking it" means — the answers stay in
+        // the browser until the whole set is submitted, so without this the
         // server could not tell a student part-way through from one who never
-        // started. Only worth saying for a student who has not submitted yet.
-        if (!submission && list.length > 0) {
-          markActivityStartedApi(moduleId).catch(() => {});
-          // The stored status above survives a refresh; this tells any watching
-          // teacher right now, without them having to wait for a poll.
+        // started.
+        //
+        // This fires on every opening, not only a first attempt. Most of a
+        // class has already submitted something, and a student going back in to
+        // improve their score is just as much "taking it now" as a first-timer;
+        // gating this on `!submission` left the teacher's monitor silent for
+        // exactly the students most likely to be retrying.
+        const openForAnswering = list.length > 0 && !submission?.locked;
+
+        if (openForAnswering) {
           getSocket()?.emit('activity:open', { moduleId, total: list.length });
+
+          // The stored marker is only meaningful before a first submission —
+          // afterwards `attempts` already tells the story.
+          if (!submission) markActivityStartedApi(moduleId).catch(() => {});
         }
       })
       .finally(() => { if (!cancelled) setLoading(false); });

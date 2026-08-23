@@ -198,10 +198,16 @@ export default function TeacherMonitor() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxWidth: '800px' }}>
           {students.map((s) => {
-            const status = STATUS_COLORS[s.status] || STATUS_COLORS.not_started;
             // Only counts as live if they are on THIS topic's activity
             const liveRow = live[s.student._id];
             const isLive  = liveRow && liveRow.moduleId === selected;
+
+            // Someone with the questions open is taking it right now, whatever
+            // their stored record says. A student who finished last week and
+            // came back to improve their score is mid-attempt again, so the row
+            // should say so until they submit and it settles back to Completed.
+            const shownStatus = isLive ? 'in_progress' : s.status;
+            const status = STATUS_COLORS[shownStatus] || STATUS_COLORS.not_started;
             return (
               <div key={s.student._id} className="comic-card" style={{ padding: '0.8rem 1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
