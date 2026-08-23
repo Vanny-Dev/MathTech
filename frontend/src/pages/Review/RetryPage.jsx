@@ -7,6 +7,9 @@ import { getActivitiesApi, submitAnswersApi } from '../../api/activityApi.js';
 import { useWorkbook } from '../../context/WorkbookContext.jsx';
 import { setSubmissionResult, resetSubmission } from '../../store/submissionSlice.js';
 import ComicStrip from '../../components/comic/ComicStrip.jsx';
+import ActivityCompleted from '../../components/shared/ActivityCompleted.jsx';
+import AttemptList from '../../components/shared/AttemptList.jsx';
+import { getLatestSubmissionApi } from '../../api/feedbackApi.js';
 import SlideDeck from '../../components/comic/SlideDeck.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 
@@ -20,14 +23,28 @@ export default function RetryPage() {
   const [current, setCurrent]           = useState(0);
   const [submitting, setSubmitting]     = useState(false);
   const [loading, setLoading]           = useState(true);
+  const [record, setRecord]             = useState(null);
 
   useEffect(() => {
     dispatch(resetSubmission());
     if (!moduleId) { setLoading(false); return; }
-    getActivitiesApi(moduleId, false)
-      .then(({ data }) => setActivities(data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+
+    let cancelled = false;
+
+    // Retry posts the same graded set as the activity itself, so it follows the
+    // same rule: open until the student has answered it perfectly.
+    Promise.all([
+      getLatestSubmissionApi(moduleId).then(({ data }) => data).catch(() => null),
+      getActivitiesApi(moduleId, false).then(({ data }) => data).catch(() => []),
+    ])
+      .then(([submission, list]) => {
+        if (cancelled) return;
+        setRecord(submission);
+        setActivities(list);
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
   }, [moduleId]);
 
   const handleAnswered = (activityId, givenAnswer) => {
@@ -57,6 +74,13 @@ export default function RetryPage() {
   };
 
   if (loading) return <Loader text="Loading retry..." />;
+
+  if (record?.locked) return (
+    <div>
+      <SectionTitle icon={RotateCcw}>Retry Activities</SectionTitle>
+      <ActivityCompleted result={record} />
+    </div>
+  );
 
   const activity      = activities[current];
   const total         = activities.length;

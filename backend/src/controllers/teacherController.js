@@ -2,6 +2,14 @@ import User       from '../models/User.js';
 import Progress   from '../models/Progress.js';
 import Submission from '../models/Submission.js';
 import Reflection from '../models/Reflection.js';
+import {
+  REQUIRED_SECTIONS,
+  ALL_SECTIONS,
+  countRequired,
+  countAll,
+  isComplete,
+  statusOf,
+} from '../utils/completion.js';
 
 // @desc    Get all students
 // @route   GET /api/teacher/students
@@ -60,9 +68,9 @@ export const getModuleProgress = async (req, res, next) => {
       const progress   = progressMap[sid] || null;
       const submission = submissionMap[sid] || null;
 
-      const completedCount = progress
-        ? Object.values(progress.completedSections).filter(Boolean).length
-        : 0;
+      // Counted against the sections a student must actually work through,
+      // not all seven — see utils/completion.js.
+      const completedCount = countRequired(progress);
 
       return {
         student: {
@@ -72,16 +80,15 @@ export const getModuleProgress = async (req, res, next) => {
           email:    student.email,
         },
         completedSections:  progress?.completedSections || {},
-        completedCount,                          // out of 7
+        completedCount,                          // out of requiredTotal
+        requiredTotal:      REQUIRED_SECTIONS.length,
+        sectionsTouched:    countAll(progress),
+        totalSections:      ALL_SECTIONS.length,
         lastVisited:        progress?.lastVisited || 'not started',
         attempts:           progress?.attempts || 0,
         latestScore:        submission?.percentage || null,
         latestSubmissionAt: submission?.createdAt || null,
-        status: !progress
-          ? 'not_started'
-          : completedCount === 7
-          ? 'completed'
-          : 'in_progress',
+        status: statusOf(progress),
       };
     });
 
@@ -154,9 +161,7 @@ export const getClassSummary = async (req, res, next) => {
     const submissions   = await Submission.find({ moduleId, isPractice: false });
 
     const started   = progressList.length;
-    const completed = progressList.filter(
-      (p) => Object.values(p.completedSections).every(Boolean)
-    ).length;
+    const completed = progressList.filter(isComplete).length;
 
     const scores      = submissions.map((s) => s.percentage);
     const avgScore    = scores.length

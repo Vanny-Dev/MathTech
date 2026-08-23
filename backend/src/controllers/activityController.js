@@ -54,6 +54,36 @@ export const submitAnswers = async (req, res, next) => {
         const module = await Module.findById(moduleId).select('isPublished releaseDate title');
         if (denyIfLocked(res, req.user, module)) return;
 
+        // A topic closes only once it has been answered perfectly.
+        //
+        // A student may attempt the graded set as many times as they need; the
+        // attempts are kept and shown to them. What ends the topic is a 100%
+        // score — there is nothing left to improve, so the questions are no
+        // longer theirs to answer again. Enforced here and not only in the UI,
+        // so hiding the page is not the only thing stopping another attempt.
+        // Practice is unscored and never closes.
+        if (!isPractice) {
+            const perfect = await Submission.findOne({
+                userId: req.user._id,
+                moduleId,
+                isPractice: false,
+                percentage: 100,
+            }).sort({ attempt: -1 });
+
+            if (perfect) {
+                return res.status(409).json({
+                    message: 'You already answered this activity perfectly',
+                    alreadyPerfect: true,
+                    submissionId: perfect._id,
+                    totalScore:   perfect.totalScore,
+                    maxScore:     perfect.maxScore,
+                    percentage:   perfect.percentage,
+                    attempt:      perfect.attempt,
+                    submittedAt:  perfect.createdAt,
+                });
+            }
+        }
+
         const activityIds = answers.map(a => a.activityId);
         const activities = await Activity.find({ _id: { $in: activityIds } });
 
@@ -90,30 +120,18 @@ export const submitAnswers = async (req, res, next) => {
 
         const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
 
-        // Attempt number = how many submissions this user already has for this module
-        const prevAttempts = await Submission.countDocuments({
-            userId: req.user._id,
-            moduleId,
-            isPractice: isPractice || false,
-        });
+        // Attempt number.
+        //
+        // Counting existing submissions and adding one is not safe: two
+        // arriving together both read N and both save N+1, which makes "latest
+        // attempt" ambiguous. The counter lives on the progress document
+        // instead, so one atomic $inc both records the attempt and hands back
+        // its number. The same call marks the activities section done.
+        let attempt;
 
-        const submission = await Submission.create({
-            userId: req.user._id,
-            moduleId,
-            answers: gradedAnswers,
-            totalScore,
-            maxScore,
-            percentage,
-            isPractice: isPractice || false,
-            attempt: prevAttempts + 1,
-        });
-
-        if(!isPractice) {
-            await Progress.findOneAndUpdate(
-                {
-                    userId: req.user._id,
-                    moduleId,
-                },
+        if (!isPractice) {
+            const claim = () => Progress.findOneAndUpdate(
+                { userId: req.user._id, moduleId },
                 {
                     $set: {
                         'completedSections.activities': true,
@@ -121,8 +139,51 @@ export const submitAnswers = async (req, res, next) => {
                     },
                     $inc: { attempts: 1 },
                 },
-                { upsert: true, new: true }
+                { upsert: true, new: true, setDefaultsOnInsert: true }
             );
+
+            let progress;
+            try {
+                progress = await claim();
+            } catch (err) {
+                // Two first-ever attempts racing each other both try to insert
+                // and one loses to the unique (userId, moduleId) index. The row
+                // exists by now, so the same call succeeds on a second go.
+                if (err?.code !== 11000) throw err;
+                progress = await claim();
+            }
+            attempt = progress.attempts;
+        } else {
+            // Practice is unscored and repeatable, so an approximate number is fine
+            attempt = await Submission.countDocuments({
+                userId: req.user._id,
+                moduleId,
+                isPractice: true,
+            }) + 1;
+        }
+
+        let submission;
+        try {
+            submission = await Submission.create({
+                userId: req.user._id,
+                moduleId,
+                answers: gradedAnswers,
+                totalScore,
+                maxScore,
+                percentage,
+                isPractice: isPractice || false,
+                attempt,
+            });
+        } catch (err) {
+            // Give the attempt number back, or the count shown to the student
+            // and to the teacher drifts above the number of real submissions.
+            if (!isPractice) {
+                await Progress.updateOne(
+                    { userId: req.user._id, moduleId },
+                    { $inc: { attempts: -1 } }
+                ).catch(() => {});
+            }
+            throw err;
         }
 
         res.status(201).json({

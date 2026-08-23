@@ -177,13 +177,13 @@ export default function TeacherMonitor() {
                   <div style={{ height: '6px', background: 'var(--paper-dark)', border: '1px solid var(--muted)', position: 'relative' }}>
                     <div style={{
                       height: '100%',
-                      width: `${(s.completedCount / 7) * 100}%`,
+                      width: `${(s.completedCount / (s.requiredTotal || 5)) * 100}%`,
                       background: 'var(--teal)',
                       transition: 'width 0.3s',
                     }} />
                   </div>
                   <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.2rem' }}>
-                    {s.completedCount}/7 sections • {s.attempts} attempt{s.attempts !== 1 ? 's' : ''}
+                    {s.completedCount}/{s.requiredTotal || 5} sections • {s.attempts} attempt{s.attempts !== 1 ? 's' : ''}
                   </div>
                 </div>
               </div>

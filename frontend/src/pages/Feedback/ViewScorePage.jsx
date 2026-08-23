@@ -1,23 +1,56 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Percent, PartyPopper, Flame, ArrowRight } from 'lucide-react';
 import SectionTitle from '../../components/shared/SectionTitle.jsx';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useWorkbook } from '../../context/WorkbookContext.jsx';
 import { markSectionCompleteApi } from '../../api/progressApi.js';
+import { getLatestSubmissionApi } from '../../api/feedbackApi.js';
+import { setSubmissionResult } from '../../store/submissionSlice.js';
+import Loader from '../../components/shared/Loader.jsx';
 
 export default function ViewScorePage() {
-  const navigate    = useNavigate();
-  const result      = useSelector((s) => s.submission.result);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const stored   = useSelector((s) => s.submission.result);
   const { moduleId, markComplete } = useWorkbook();
 
-  const handleNext = async () => {
-    try {
-      await markSectionCompleteApi(moduleId, 'feedback');
-      markComplete('feedback');
-    } catch (_) {}
-    navigate('/feedback/answers');
-  };
+  const [result, setResult]   = useState(stored);
+  const [loading, setLoading] = useState(!stored);
+
+  // Redux is memory. One refresh and the score the student had just earned was
+  // gone, leaving "No submission found" and no way to finish this section.
+  // Fall back to their own latest graded attempt on the server.
+  useEffect(() => {
+    if (stored) { setResult(stored); setLoading(false); return; }
+    if (!moduleId) { setLoading(false); return; }
+
+    let cancelled = false;
+    getLatestSubmissionApi(moduleId)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setResult(data);
+        dispatch(setSubmissionResult(data));   // restore it for the pages after this one
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [stored, moduleId, dispatch]);
+
+  // Seeing the score is what finishes this section. It used to be marked only
+  // when the student clicked through to the answers, so anyone who left by the
+  // sidebar stayed one section short of completion.
+  useEffect(() => {
+    if (!result || !moduleId) return;
+    markSectionCompleteApi(moduleId, 'feedback')
+      .then(() => markComplete('feedback'))
+      .catch(() => {});
+  }, [result, moduleId, markComplete]);
+
+  const handleNext = () => navigate('/feedback/answers');
+
+  if (loading) return <Loader text="Loading your score..." />;
 
   if (!result) return (
     <div>

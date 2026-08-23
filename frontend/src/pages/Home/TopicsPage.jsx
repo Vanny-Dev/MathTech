@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { BookMarked, Lock, ArrowRight, CalendarClock, Check } from 'lucide-react';
+import { BookMarked, Lock, ArrowRight, CalendarClock, Check, CircleCheckBig } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import SectionTitle from '../../components/shared/SectionTitle.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 import { getModulesApi } from '../../api/moduleApi.js';
+import { getMyProgressApi } from '../../api/progressApi.js';
 import { useWorkbook } from '../../context/WorkbookContext.jsx';
 import { formatRelease, timeUntil } from '../../utils/releaseTime.js';
 
@@ -15,11 +16,28 @@ export default function TopicsPage() {
   const [loading, setLoading] = useState(true);
   const [, forceTick]         = useState(0);
 
+  // moduleId -> this student's standing on that topic
+  const [mine, setMine] = useState({});
+
   useEffect(() => {
-    getModulesApi()
-      .then(({ data }) => setModules(data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    let cancelled = false;
+
+    Promise.all([
+      getModulesApi().then(({ data }) => data).catch(() => []),
+      // A student should be able to see at a glance which topics they have
+      // already finished, rather than opening each one to find out.
+      getMyProgressApi().then(({ data }) => data).catch(() => []),
+    ])
+      .then(([list, progress]) => {
+        if (cancelled) return;
+        setModules(list);
+        const byId = {};
+        progress.forEach((row) => { byId[row.moduleId] = row; });
+        setMine(byId);
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
   }, []);
 
   // Re-render every 30s so countdowns tick down and a topic unlocks on time
@@ -49,6 +67,10 @@ export default function TopicsPage() {
             const locked    = !m.isReleased;
             const selected  = m._id === moduleId;
             const countdown = timeUntil(m.releaseDate);
+            const standing  = mine[m._id];
+            // A topic closes when its activity has been answered perfectly.
+            const done      = !locked && standing?.activityLocked === true;
+            const tried     = !locked && !done && (standing?.attempts ?? 0) > 0;
 
             return (
               <div
@@ -65,11 +87,15 @@ export default function TopicsPage() {
                     {locked ? <Lock size={16} strokeWidth={2.5} /> : <BookMarked size={16} strokeWidth={2.5} />}
                   </span>
                   <span style={s.title}>{m.title}</span>
-                  {selected && !locked && (
+                  {done ? (
+                    <span style={s.doneChip}>
+                      <CircleCheckBig size={11} strokeWidth={3} /> 100%
+                    </span>
+                  ) : selected && !locked ? (
                     <span className="formula-chip light" style={s.chip}>
                       <Check size={11} strokeWidth={3} /> current
                     </span>
-                  )}
+                  ) : null}
                 </div>
 
                 <div style={s.meta}>
@@ -98,14 +124,19 @@ export default function TopicsPage() {
                 ) : (
                   <>
                     <div style={s.openRow}>
-                      Opened {formatRelease(m.releaseDate)}
+                      {done
+                        ? `Completed — perfect score`
+                        : tried
+                        ? `Best ${standing.bestPercentage}% in ${standing.attempts} attempt${standing.attempts === 1 ? '' : 's'}`
+                        : `Opened ${formatRelease(m.releaseDate)}`}
                     </div>
                     <button
-                      className={selected ? 'btn btn-teal' : 'btn btn-primary'}
+                      className={done ? 'btn btn-outline' : selected ? 'btn btn-teal' : 'btn btn-primary'}
                       style={s.btn}
                       onClick={() => openTopic(m)}
                     >
-                      {selected ? 'Continue' : 'Open topic'} <ArrowRight size={15} />
+                      {done ? 'Review topic' : tried ? 'Try again' : selected ? 'Continue' : 'Open topic'}{' '}
+                      <ArrowRight size={15} />
                     </button>
                   </>
                 )}
@@ -119,6 +150,22 @@ export default function TopicsPage() {
 }
 
 const s = {
+  // Reads as finished at a glance, without looking like the locked state
+  doneChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.25rem',
+    flexShrink: 0,
+    background: 'var(--green)',
+    color: 'var(--ink)',
+    border: '2px solid var(--ink)',
+    padding: '0.1rem 0.45rem',
+    fontFamily: 'JetBrains Mono, monospace',
+    fontSize: '0.62rem',
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
   list: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',

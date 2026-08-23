@@ -4,7 +4,8 @@ import SectionTitle from '../../components/shared/SectionTitle.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useWorkbook } from '../../context/WorkbookContext.jsx';
-import { getIncorrectAnswersApi } from '../../api/feedbackApi.js';
+import { getIncorrectAnswersApi, getLatestSubmissionApi } from '../../api/feedbackApi.js';
+import { setSubmissionResult } from '../../store/submissionSlice.js';
 import { markSectionCompleteApi } from '../../api/progressApi.js';
 import { markSection } from '../../store/workbookSlice.js';
 import { useDispatch } from 'react-redux';
@@ -20,20 +21,46 @@ export default function ReviewIncorrectPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!submissionId) { setLoading(false); return; }
-    getIncorrectAnswersApi(submissionId)
-      .then(({ data }) => {
+    let cancelled = false;
+
+    // The submission id lives in Redux, which a refresh empties. This page then
+    // returned immediately, so the review section could never be marked done.
+    // Recover the id from the server when memory has lost it.
+    const resolveId = async () => {
+      if (submissionId) return submissionId;
+      if (!moduleId) return null;
+      try {
+        const { data } = await getLatestSubmissionApi(moduleId);
+        if (!cancelled) dispatch(setSubmissionResult(data));
+        return data.submissionId;
+      } catch {
+        return null;
+      }
+    };
+
+    (async () => {
+      const id = await resolveId();
+      if (cancelled) return;
+      if (!id) { setLoading(false); return; }
+
+      try {
+        const { data } = await getIncorrectAnswersApi(id);
+        if (cancelled) return;
         setItems(data);
-        // Mark review complete
         if (moduleId) {
           markSectionCompleteApi(moduleId, 'review').catch(() => {});
           dispatch(markSection('review'));
           markComplete('review');
         }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [submissionId]);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [submissionId, moduleId, dispatch, markComplete]);
 
   if (loading) return <Loader text="Loading review..." />;
 

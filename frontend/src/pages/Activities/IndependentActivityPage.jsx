@@ -8,6 +8,9 @@ import { useWorkbook } from '../../context/WorkbookContext.jsx';
 import { setAnswer, setSubmissionResult, resetSubmission } from '../../store/submissionSlice.js';
 import { markSection } from '../../store/workbookSlice.js';
 import ComicStrip from '../../components/comic/ComicStrip.jsx';
+import ActivityCompleted from '../../components/shared/ActivityCompleted.jsx';
+import AttemptList from '../../components/shared/AttemptList.jsx';
+import { getLatestSubmissionApi } from '../../api/feedbackApi.js';
 import SlideDeck from '../../components/comic/SlideDeck.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 
@@ -23,13 +26,30 @@ export default function IndependentActivityPage() {
   const [submitting, setSubmitting]     = useState(false);
   const [loading, setLoading]           = useState(true);
 
+  // This student's graded record for the topic: every attempt so far, and
+  // whether one of them was perfect — a perfect one closes the activity.
+  const [record, setRecord]             = useState(null);
+
   useEffect(() => {
     dispatch(resetSubmission());
     if (!moduleId) { setLoading(false); return; }
-    getActivitiesApi(moduleId, false)
-      .then(({ data }) => setActivities(data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+
+    let cancelled = false;
+
+    // Load the questions and the student's own attempt history together. The
+    // history decides whether this page shows the activity or closes it.
+    Promise.all([
+      getLatestSubmissionApi(moduleId).then(({ data }) => data).catch(() => null),
+      getActivitiesApi(moduleId, false).then(({ data }) => data).catch(() => []),
+    ])
+      .then(([submission, list]) => {
+        if (cancelled) return;
+        setRecord(submission);
+        setActivities(list);
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
   }, [moduleId]);
 
   const handleAnswered = (activityId, givenAnswer) => {
@@ -55,13 +75,28 @@ export default function IndependentActivityPage() {
       markComplete('activities');
       navigate('/feedback');
     } catch (err) {
-      console.error(err);
+      // 409 means another tab, or a refresh mid-submit, already recorded this
+      // attempt. Show the completed panel rather than a dead button.
+      if (err?.response?.status === 409) {
+        setRecord({ ...err.response.data, locked: true });
+      } else {
+        console.error(err);
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
   if (loading) return <Loader text="Loading activities..." />;
+
+  // Only a perfect score ends the topic. Anything less leaves it open, with
+  // the previous attempts shown so the student can see where they stand.
+  if (record?.locked) return (
+    <div>
+      <SectionTitle icon={NotebookPen}>Independent Activity</SectionTitle>
+      <ActivityCompleted result={record} />
+    </div>
+  );
   if (activities.length === 0) return (
     <div>
       <SectionTitle icon={NotebookPen}>Independent Activity</SectionTitle>
@@ -81,6 +116,9 @@ export default function IndependentActivityPage() {
         meta={
           <>
             <span className="page-head-count">Question <b>{current + 1}</b> of {total}</span>
+            {record?.attempts ? (
+              <span className="page-pill">attempt {record.attempts + 1}</span>
+            ) : null}
             <span className="page-pill">{answeredCount}/{total} answered</span>
             <span className="page-pill teal">GRADED</span>
           </>
@@ -88,6 +126,13 @@ export default function IndependentActivityPage() {
       >
         Independent Activity
       </SectionTitle>
+
+      {/* Previous attempts, when there are any to show */}
+      {record?.history?.length > 0 && (
+        <div className="comic-card" style={{ marginBottom: '1rem', padding: '0.7rem 0.8rem' }}>
+          <AttemptList history={record.history} />
+        </div>
+      )}
 
       {/* Answer dots */}
       <div className="q-dots">

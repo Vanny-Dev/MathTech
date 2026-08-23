@@ -1,5 +1,6 @@
 import Progress   from '../models/Progress.js';
 import Submission  from '../models/Submission.js';
+import { REQUIRED_SECTIONS, countRequired, statusOf } from '../utils/completion.js';
 
 // @desc    Get progress for a user on a module
 // @route   GET /api/progress/:moduleId
@@ -94,6 +95,64 @@ export const getPerformanceSummary = async (req, res, next) => {
     );
 
     res.json({ summary, best, totalAttempts: submissions.length });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Where the signed-in student stands on every topic, in one call
+// @route   GET /api/progress/mine
+// @access  Private
+//
+// The topics list needs a per-topic status without asking for each module
+// separately, and the activity pages need to know whether the graded set is
+// already closed for this student.
+export const getMyProgress = async (req, res, next) => {
+  try {
+    const [progressList, submissions] = await Promise.all([
+      Progress.find({ userId: req.user._id }),
+      Submission.find({ userId: req.user._id, isPractice: false }).sort({ attempt: -1 }),
+    ]);
+
+    // Per module: how many graded attempts, the latest, and the best
+    const statsByModule = {};
+    submissions.forEach((s) => {
+      const id = s.moduleId.toString();
+      const row = statsByModule[id] || (statsByModule[id] = { attempts: 0, latest: null, best: null });
+      row.attempts += 1;
+      // The list is sorted by attempt descending, so the first seen is latest
+      if (!row.latest) row.latest = s;
+      if (!row.best || s.percentage > row.best.percentage) row.best = s;
+    });
+
+    const byModule = {};
+
+    const rowFor = (id, progress, stats) => ({
+      moduleId:          id,
+      status:            statusOf(progress),
+      completedCount:    countRequired(progress),
+      requiredTotal:     REQUIRED_SECTIONS.length,
+      completedSections: progress?.completedSections ?? {},
+      attempts:          stats?.attempts ?? 0,
+      percentage:        stats?.latest?.percentage ?? null,
+      bestPercentage:    stats?.best?.percentage ?? null,
+      submittedAt:       stats?.latest?.createdAt ?? null,
+      // Answering perfectly is what closes a topic; anything less stays open
+      activityLocked:    stats?.best?.percentage === 100,
+    });
+
+    progressList.forEach((p) => {
+      const id = p.moduleId.toString();
+      byModule[id] = rowFor(id, p, statsByModule[id]);
+    });
+
+    // A submission with no progress row should still report its scores
+    Object.entries(statsByModule).forEach(([id, stats]) => {
+      if (byModule[id]) return;
+      byModule[id] = rowFor(id, null, stats);
+    });
+
+    res.json(Object.values(byModule));
   } catch (err) {
     next(err);
   }

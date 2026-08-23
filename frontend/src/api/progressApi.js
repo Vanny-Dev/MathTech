@@ -6,3 +6,7 @@ export const markSectionCompleteApi = (moduleId, section) =>
 export const getPerformanceSummaryApi = (moduleId) =>
   api.get(`/progress/${moduleId}/summary`);
 export const getCompletedActivitiesApi = () => api.get('/progress/completed');
+
+// Where this student stands on every topic, in one call — drives the Completed
+// badges on the topics list.
+export const getMyProgressApi = () => api.get('/progress/mine');
