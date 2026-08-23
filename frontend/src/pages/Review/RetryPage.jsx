@@ -150,7 +150,7 @@ export default function RetryPage() {
         )}
         {allAnswered && (
           <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting} style={{ marginLeft: 'auto' }}>
-            {submitting ? 'Submitting...' : 'SUBMIT RETRY <ArrowRight size={15} />'}
+            {submitting ? 'Submitting...' : <>SUBMIT RETRY <ArrowRight size={15} /></>}
           </button>
         )}
       </div>
