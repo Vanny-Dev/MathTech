@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getMeApi } from '../api/authApi.js';
+import { closeSocket } from '../realtime/socket.js';
 
 const AuthContext = createContext(null);
 
@@ -15,6 +16,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Drop the live connection too, or the socket keeps the old identity and
+    // a logged-out student can still appear in the teacher's monitor.
+    closeSocket();
     localStorage.removeItem('dw_user');
     setUser(null);
   };

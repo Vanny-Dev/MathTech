@@ -82,6 +82,16 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
+/* Live-monitor pulse: marks a student who is answering right now */
+@keyframes lm-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes lm-pulse { from { opacity: 1 } to { opacity: 1 } }
+}
+
 /* Spinner for refresh icons */
 @keyframes spin {
   to { transform: rotate(360deg); }

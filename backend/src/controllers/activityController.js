@@ -3,6 +3,7 @@ import Submission from '../models/Submission.js';
 import Progress from '../models/Progress.js';
 import Module from '../models/Module.js';
 import { denyIfLocked } from '../utils/release.js';
+import { emitStatusChange } from '../realtime/index.js';
 
 // @desc    Get all activities for a specific module
 // @route   GET /api/activities?moduleId=&isPractice=
@@ -184,6 +185,19 @@ export const submitAnswers = async (req, res, next) => {
                 ).catch(() => {});
             }
             throw err;
+        }
+
+        // Tell any watching teacher straight away, rather than leaving the
+        // monitor stale until someone presses Refresh.
+        if (!isPractice) {
+            emitStatusChange({
+                studentId:  req.user._id.toString(),
+                moduleId:   String(moduleId),
+                status:     'completed',
+                percentage,
+                attempt:    submission.attempt,
+                submittedAt: submission.createdAt,
+            });
         }
 
         res.status(201).json({

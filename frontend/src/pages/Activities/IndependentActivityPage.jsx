@@ -12,6 +12,7 @@ import ActivityCompleted from '../../components/shared/ActivityCompleted.jsx';
 import AttemptList from '../../components/shared/AttemptList.jsx';
 import { getLatestSubmissionApi } from '../../api/feedbackApi.js';
 import { markActivityStartedApi } from '../../api/progressApi.js';
+import { getSocket } from '../../realtime/socket.js';
 import SlideDeck from '../../components/comic/SlideDeck.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 
@@ -54,15 +55,32 @@ export default function IndependentActivityPage() {
         // started. Only worth saying for a student who has not submitted yet.
         if (!submission && list.length > 0) {
           markActivityStartedApi(moduleId).catch(() => {});
+          // The stored status above survives a refresh; this tells any watching
+          // teacher right now, without them having to wait for a poll.
+          getSocket()?.emit('activity:open', { moduleId, total: list.length });
         }
       })
       .finally(() => { if (!cancelled) setLoading(false); });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      // Closing the tab is covered by the socket disconnecting; this handles
+      // the ordinary case of navigating to another page.
+      getSocket()?.emit('activity:leave');
+    };
   }, [moduleId]);
 
   const handleAnswered = (activityId, givenAnswer) => {
-    setLocalAnswers((prev) => ({ ...prev, [activityId]: givenAnswer }));
+    setLocalAnswers((prev) => {
+      const next = { ...prev, [activityId]: givenAnswer };
+      // Report how far along they are, so the monitor can show 3/10 as it
+      // happens. Derived from `next` because setState has not applied yet.
+      getSocket()?.emit('activity:answer', {
+        answered: Object.keys(next).length,
+        total: activities.length,
+      });
+      return next;
+    });
     dispatch(setAnswer({ activityId, answer: givenAnswer }));
     return null; // correctness revealed after full submit
   };
@@ -79,6 +97,7 @@ export default function IndependentActivityPage() {
         })),
       };
       const { data } = await submitAnswersApi(payload);
+      getSocket()?.emit('activity:leave');
       dispatch(setSubmissionResult(data));
       dispatch(markSection('activities'));
       markComplete('activities');

@@ -1,6 +1,7 @@
 import Progress   from '../models/Progress.js';
 import Submission  from '../models/Submission.js';
 import { REQUIRED_SECTIONS, countRequired, activityStatusOf } from '../utils/completion.js';
+import { emitStatusChange } from '../realtime/index.js';
 
 // @desc    Get progress for a user on a module
 // @route   GET /api/progress/:moduleId
@@ -100,6 +101,13 @@ export const markActivityStarted = async (req, res, next) => {
       progress.activityStartedAt = new Date();
       await progress.save();
     }
+
+    emitStatusChange({
+      studentId: req.user._id.toString(),
+      moduleId:  String(req.params.moduleId),
+      status:    'in_progress',
+      startedAt: progress.activityStartedAt,
+    });
 
     res.json({ activityStartedAt: progress.activityStartedAt });
   } catch (err) {
