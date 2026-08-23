@@ -58,18 +58,22 @@ export const isComplete = (progress) =>
  *
  * Status used to be counted from the sections a student had opened, which
  * measured the wrong thing: someone could ace the activity and still read as
- * "In Progress" because they had not opened one more page, while someone who
- * scored 90% but clicked through everything read as "Completed". The activity
- * is the work, so the activity decides:
+ * unfinished because they had not opened one more page.
  *
- *   no attempt        -> not started
- *   attempted         -> in progress
- *   answered perfectly-> completed   (this is also what closes the topic)
+ * What the status answers is simply "how far into the activity are they":
+ *
+ *   never opened it        -> not started
+ *   opened, not submitted  -> in progress   (they are taking it now)
+ *   submitted              -> completed     (they are done taking it)
+ *
+ * Note that completed is about finishing the activity, not about scoring
+ * perfectly. Whether the topic is CLOSED is a separate question — only a 100%
+ * score does that — so a student can be completed and still choose to retry.
  *
  * The section counts are still reported, because they are useful detail for a
- * teacher, but they no longer set the status.
+ * teacher, but they do not set the status.
  */
-export const activityStatusOf = ({ attempts = 0, bestPercentage = null } = {}) => {
-  if (!attempts) return 'not_started';
-  return bestPercentage === 100 ? 'completed' : 'in_progress';
+export const activityStatusOf = ({ attempts = 0, startedAt = null } = {}) => {
+  if (attempts > 0) return 'completed';
+  return startedAt ? 'in_progress' : 'not_started';
 };

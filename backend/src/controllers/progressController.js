@@ -73,6 +73,40 @@ export const markSectionComplete = async (req, res, next) => {
   }
 };
 
+// @desc    Note that this student has opened the graded activity
+// @route   PUT /api/progress/:moduleId/activity-started
+// @access  Private
+//
+// Called when the activity page opens. Idempotent: the timestamp is only ever
+// written once, so re-opening the page does not move it.
+export const markActivityStarted = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'student') {
+      return res.json({ preview: true });
+    }
+
+    const progress = await Progress.findOneAndUpdate(
+      { userId: req.user._id, moduleId: req.params.moduleId },
+      {
+        $setOnInsert: { activityStartedAt: new Date() },
+        $set: { lastVisited: 'activities' },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    // $setOnInsert only fires when the row is created, so an existing row that
+    // predates this field still needs the stamp.
+    if (!progress.activityStartedAt) {
+      progress.activityStartedAt = new Date();
+      await progress.save();
+    }
+
+    res.json({ activityStartedAt: progress.activityStartedAt });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // @desc    Get performance summary (all submissions for a module)
 // @route   GET /api/progress/:moduleId/summary
 // @access  Private
@@ -144,8 +178,8 @@ export const getMyProgress = async (req, res, next) => {
       moduleId:          id,
       // Same rule the teacher monitor uses: the activity decides.
       status:            activityStatusOf({
-        attempts:       stats?.attempts ?? 0,
-        bestPercentage: stats?.best?.percentage ?? null,
+        attempts:  stats?.attempts ?? 0,
+        startedAt: progress?.activityStartedAt ?? null,
       }),
       completedCount:    countRequired(progress),
       requiredTotal:     REQUIRED_SECTIONS.length,

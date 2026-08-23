@@ -5,6 +5,7 @@ import {
   getPerformanceSummary,
   getCompletedActivities,
   getMyProgress,
+  markActivityStarted,
 } from '../controllers/progressController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -15,6 +16,7 @@ router.get('/completed',              protect, getCompletedActivities);
 router.get('/mine',                   protect, getMyProgress);
 router.get('/:moduleId',              protect, getProgress);
 router.put('/:moduleId/section',      protect, markSectionComplete);
+router.put('/:moduleId/activity-started', protect, markActivityStarted);
 router.get('/:moduleId/summary',      protect, getPerformanceSummary);
 
 export default router;

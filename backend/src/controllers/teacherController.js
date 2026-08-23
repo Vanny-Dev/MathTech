@@ -102,8 +102,8 @@ export const getModuleProgress = async (req, res, next) => {
         latestSubmissionAt: stats?.latest?.createdAt || null,
 
         status: activityStatusOf({
-          attempts:       stats?.attempts || 0,
-          bestPercentage: stats?.best?.percentage ?? null,
+          attempts:  stats?.attempts || 0,
+          startedAt: progress?.activityStartedAt ?? null,
         }),
       };
     });
@@ -186,8 +186,16 @@ export const getClassSummary = async (req, res, next) => {
       isPractice: false,
       userId: { $in: studentIds },
     });
+    const progressList = await Progress.find({
+      moduleId,
+      userId: { $in: studentIds },
+    }).select('userId activityStartedAt');
 
     const statsMap = gradedStatsByStudent(submissions);
+    const startedMap = {};
+    progressList.forEach((p) => {
+      startedMap[p.userId.toString()] = p.activityStartedAt;
+    });
 
     let completed  = 0;
     let inProgress = 0;
@@ -196,8 +204,8 @@ export const getClassSummary = async (req, res, next) => {
     students.forEach((s) => {
       const stats = statsMap[s._id.toString()];
       const status = activityStatusOf({
-        attempts:       stats?.attempts || 0,
-        bestPercentage: stats?.best?.percentage ?? null,
+        attempts:  stats?.attempts || 0,
+        startedAt: startedMap[s._id.toString()] ?? null,
       });
       if (status === 'completed') completed += 1;
       else if (status === 'in_progress') inProgress += 1;

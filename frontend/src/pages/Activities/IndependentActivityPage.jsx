@@ -11,6 +11,7 @@ import ComicStrip from '../../components/comic/ComicStrip.jsx';
 import ActivityCompleted from '../../components/shared/ActivityCompleted.jsx';
 import AttemptList from '../../components/shared/AttemptList.jsx';
 import { getLatestSubmissionApi } from '../../api/feedbackApi.js';
+import { markActivityStartedApi } from '../../api/progressApi.js';
 import SlideDeck from '../../components/comic/SlideDeck.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 
@@ -46,6 +47,14 @@ export default function IndependentActivityPage() {
         if (cancelled) return;
         setRecord(submission);
         setActivities(list);
+
+        // Opening the questions is what "in progress" means — the answers stay
+        // in the browser until the whole set is submitted, so without this the
+        // server could not tell a student part-way through from one who never
+        // started. Only worth saying for a student who has not submitted yet.
+        if (!submission && list.length > 0) {
+          markActivityStartedApi(moduleId).catch(() => {});
+        }
       })
       .finally(() => { if (!cancelled) setLoading(false); });
 

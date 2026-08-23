@@ -8,16 +8,12 @@ import Loader from '../../components/shared/Loader.jsx';
 
 
 /**
- * The three states of a topic's Independent Activity.
- *
- * The middle one is deliberately "Answered" rather than "In Progress". A
- * student who took the activity weeks ago and scored 90% is not still working
- * on it — the topic simply stays open in case they want to improve, since only
- * a perfect score closes it. "In Progress" made every one of them look unfinished.
+ * The three states of a topic's Independent Activity: never opened, being
+ * taken right now, and finished. See backend/src/utils/completion.js.
  */
 const STATUS_COLORS = {
   completed:   { bg: 'var(--green)',      label: 'Completed' },
-  in_progress: { bg: 'var(--yellow)',     label: 'Answered' },
+  in_progress: { bg: 'var(--yellow)',     label: 'In Progress' },
   not_started: { bg: 'var(--paper-dark)', label: 'Not Started' },
 };
 
@@ -197,7 +193,7 @@ export default function TeacherMonitor() {
                   </div>
                   <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.2rem' }}>
                     {s.attempts === 0
-                      ? 'No attempt yet'
+                      ? (s.status === 'in_progress' ? 'Taking it now — not submitted yet' : 'No attempt yet')
                       : [
                           `Best ${s.bestScore}%`,
                           // Only worth saying when the newest try was not the best one

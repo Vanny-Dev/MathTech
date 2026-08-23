@@ -46,6 +46,17 @@ const ProgressSchema = new mongoose.Schema(
             type: String,
             default: 'home'
         },
+
+        // When this student first opened the graded activity.
+        //
+        // Answers live in the browser until the whole set is submitted, so the
+        // server has no other way to tell someone who is part-way through the
+        // questions from someone who never opened them. Set once, on the first
+        // visit, and never cleared.
+        activityStartedAt: {
+            type: Date,
+            default: null
+        },
         attempts: {
             type: Number,
             default: 0

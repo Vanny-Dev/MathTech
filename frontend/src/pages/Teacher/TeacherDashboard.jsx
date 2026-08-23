@@ -72,7 +72,7 @@ export default function TeacherDashboard() {
             { label: 'Started',        value: summary.started,          color: 'var(--teal)' },
             { label: 'Not Started',    value: summary.notStarted,       color: 'var(--red)' },
             { label: 'Completed',      value: summary.completed,        color: 'var(--green)' },
-            { label: 'Answered',       value: summary.inProgress,       color: 'var(--yellow)' },
+            { label: 'In Progress',    value: summary.inProgress,       color: 'var(--yellow)' },
             { label: 'Avg Score',      value: `${summary.scores.average}%`, color: 'var(--white)' },
           ].map((s) => (
             <div key={s.label} className="comic-card" style={{ background: s.color, textAlign: 'center' }}>

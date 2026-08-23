@@ -10,3 +10,8 @@ export const getCompletedActivitiesApi = () => api.get('/progress/completed');
 // Where this student stands on every topic, in one call — drives the Completed
 // badges on the topics list.
 export const getMyProgressApi = () => api.get('/progress/mine');
+
+// Tells the server the student has opened the graded activity, which is what
+// puts them in "In Progress" until they submit.
+export const markActivityStartedApi = (moduleId) =>
+  api.put(`/progress/${moduleId}/activity-started`);
