@@ -291,7 +291,6 @@ export default function TeacherMonitor() {
                         ? `${Math.round((liveRow.answered / liveRow.total) * 100)}%`
                         : `${s.bestScore ?? 0}%`,
                       background: isLive ? 'var(--yellow)' : 'var(--teal)',
-                      background: 'var(--teal)',
                       transition: 'width 0.3s',
                     }} />
                   </div>

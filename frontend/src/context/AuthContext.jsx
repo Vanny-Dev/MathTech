@@ -7,7 +7,14 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem('dw_user');
-    return stored ? JSON.parse(stored) : null;
+    if (!stored) return null;
+    try {
+      return JSON.parse(stored);
+    } catch {
+      // Corrupted session data must not crash the whole app on startup.
+      localStorage.removeItem('dw_user');
+      return null;
+    }
   });
 
   const login = (userData) => {
@@ -60,9 +67,10 @@ export const AuthProvider = ({ children }) => {
 
   const isTeacher = user?.role === 'teacher';
   const isStudent = user?.role === 'student';
+  const isDeveloper = user?.role === 'developer';
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isTeacher, isStudent }}>
+    <AuthContext.Provider value={{ user, login, logout, isTeacher, isStudent, isDeveloper }}>
       {children}
     </AuthContext.Provider>
   );

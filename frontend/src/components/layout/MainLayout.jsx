@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import Navbar from './Navbar.jsx';
+import ResponsiveAd from '../ads/ResponsiveAd.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 export default function MainLayout({ children }) {
   const [isMobileView, setIsMobileView] = useState(() => window.innerWidth < 900);
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 900);
   const location = useLocation();
+  const { isTeacher, isDeveloper } = useAuth();
 
   useEffect(() => {
     const handleResize = () => {
@@ -27,7 +30,7 @@ export default function MainLayout({ children }) {
   // A student reads one column of questions and explanation, so that column is
   // held to a comfortable measure and centred. A teacher works with rosters and
   // progress tables, which need the room, so those pages get a wide column.
-  const isTeacherPage = location.pathname.startsWith('/teacher');
+  const isTeacherPage = location.pathname.startsWith('/teacher') || location.pathname.startsWith('/developer');
 
   return (
     <div style={styles.root}>
@@ -43,6 +46,11 @@ export default function MainLayout({ children }) {
               hugging the left edge with a third of the screen empty. */}
           <div style={{ ...styles.column, maxWidth: isTeacherPage ? '1240px' : '700px' }}>
             {children}
+            {/* Teachers and developers work with rosters/settings, not the
+                comic workbook — ads stay on the student-facing pages only. */}
+            {!isTeacher && !isDeveloper && (
+              <ResponsiveAd placement="content" style={{ marginTop: '1.5rem' }} />
+            )}
           </div>
         </main>
       </div>

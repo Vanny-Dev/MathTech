@@ -30,8 +30,12 @@ const api = axios.create({ baseURL });
 api.interceptors.request.use((config) => {
   const user = localStorage.getItem('dw_user');
   if (user) {
-    const { token } = JSON.parse(user);
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const { token } = JSON.parse(user);
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+    } catch {
+      localStorage.removeItem('dw_user');
+    }
   }
   return config;
 });
