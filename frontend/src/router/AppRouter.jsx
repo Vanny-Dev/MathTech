@@ -39,9 +39,6 @@ import TeacherMonitor   from '../pages/Teacher/TeacherMonitor.jsx';
 import TeacherSchedule  from '../pages/Teacher/TeacherSchedule.jsx';
 import StudentDetail    from '../pages/Teacher/StudentDetail.jsx';
 
-// Developer pages
-import AdSettingsPage from '../pages/Developer/AdSettingsPage.jsx';
-
 // Guards
 const PrivateRoute = ({ children }) => {
   const { user } = useAuth();
@@ -55,19 +52,8 @@ const TeacherRoute = ({ children }) => {
   return children;
 };
 
-// Frontend-only visibility check — the real boundary is the backend's
-// developerOnly middleware (authMiddleware.js), which rejects the API calls
-// this page makes regardless of what the client renders.
-const DeveloperRoute = ({ children }) => {
-  const { user, isDeveloper } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
-  if (!isDeveloper) return <Navigate to="/home" replace />;
-  return children;
-};
-
 const homeRouteFor = (role) => {
   if (role === 'teacher') return '/teacher/dashboard';
-  if (role === 'developer') return '/developer/ads';
   return '/home';
 };
 
@@ -121,9 +107,6 @@ export default function AppRouter() {
       <Route path="/teacher/monitor"                          element={<TeacherRoute><MainLayout><TeacherMonitor /></MainLayout></TeacherRoute>} />
       <Route path="/teacher/schedule"                         element={<TeacherRoute><MainLayout><TeacherSchedule /></MainLayout></TeacherRoute>} />
       <Route path="/teacher/monitor/:moduleId/student/:studentId" element={<TeacherRoute><MainLayout><StudentDetail /></MainLayout></TeacherRoute>} />
-
-      {/* Developer routes */}
-      <Route path="/developer/ads" element={<DeveloperRoute><MainLayout><AdSettingsPage /></MainLayout></DeveloperRoute>} />
 
       {/* Fallback */}
       <Route path="*" element={<NotFoundPage />} />

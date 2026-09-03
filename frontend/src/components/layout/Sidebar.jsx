@@ -16,7 +16,6 @@ import {
   X,
   BookMarked,
   CalendarClock,
-  Megaphone,
 } from 'lucide-react';
 import Logo from '../shared/Logo.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -40,15 +39,11 @@ const teacherNav = [
   { icon: CalendarClock, label: 'Schedule', path: '/teacher/schedule', section: null },
 ];
 
-const developerNav = [
-  { icon: Megaphone, label: 'Ad Settings', path: '/developer/ads', section: null },
-];
-
 export default function Sidebar({ isOpen, onClose, isMobile }) {
-  const { user, logout, isTeacher, isDeveloper } = useAuth();
+  const { user, logout, isTeacher } = useAuth();
   const navigate = useNavigate();
 
-  const navItems = isDeveloper ? developerNav : isTeacher ? teacherNav : studentNav;
+  const navItems = isTeacher ? teacherNav : studentNav;
 
   const handleLogout = () => {
     logout();

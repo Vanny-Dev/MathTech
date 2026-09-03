@@ -75,16 +75,3 @@ export const studentOnly = (req, res, next) => {
         message: 'Access denied: Students only'
     });
 };
-
-// Only the developer role can access — used to gate developer-only tooling
-// such as the advertisement control panel. Frontend role checks only hide the
-// UI; this is the actual security boundary, since a request can be replayed
-// straight at the API regardless of what the browser shows.
-export const developerOnly = (req, res, next) => {
-    if (req.user && req.user.role === 'developer') {
-        return next();
-    }
-    return res.status(403).json({
-        message: 'Access denied: Developers only'
-    });
-};

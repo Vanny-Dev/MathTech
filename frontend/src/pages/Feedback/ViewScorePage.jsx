@@ -8,8 +8,6 @@ import { markSectionCompleteApi } from '../../api/progressApi.js';
 import { getLatestSubmissionApi } from '../../api/feedbackApi.js';
 import { setSubmissionResult } from '../../store/submissionSlice.js';
 import Loader from '../../components/shared/Loader.jsx';
-import AdContainer from '../../components/ads/AdContainer.jsx';
-import { useAds } from '../../hooks/useAds.js';
 
 export default function ViewScorePage() {
   const navigate = useNavigate();
@@ -19,7 +17,6 @@ export default function ViewScorePage() {
 
   const [result, setResult]   = useState(stored);
   const [loading, setLoading] = useState(!stored);
-  const { notifyEligibleAction } = useAds();
 
   // Redux is memory. One refresh and the score the student had just earned was
   // gone, leaving "No submission found" and no way to finish this section.
@@ -49,11 +46,7 @@ export default function ViewScorePage() {
     markSectionCompleteApi(moduleId, 'feedback')
       .then(() => markComplete('feedback'))
       .catch(() => {});
-    // Finishing a graded activity is a meaningful break point — one of the
-    // "eligible actions" the developer's EVERY_ELIGIBLE_ACTION mode is
-    // allowed to react to. A no-op in normal/frequent mode.
-    notifyEligibleAction('activity_scored');
-  }, [result, moduleId, markComplete, notifyEligibleAction]);
+  }, [result, moduleId, markComplete]);
 
   const handleNext = () => navigate('/feedback/answers');
 
@@ -148,8 +141,6 @@ export default function ViewScorePage() {
           </button>
         )}
       </div>
-
-      <AdContainer placement="betweenContent" trigger="eligible-action" style={{ marginTop: '1.5rem' }} />
     </div>
   );
 }
