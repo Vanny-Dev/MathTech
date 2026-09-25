@@ -12,10 +12,13 @@ const UserSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    // Students no longer give an email when they register, so this is optional.
+    // `sparse` keeps the unique index from treating several missing emails as
+    // duplicates — without it, only one account could exist without one.
     email: {
       type: String,
-      required: true,
       unique: true,
+      sparse: true,
     },
     password: {
       type: String,

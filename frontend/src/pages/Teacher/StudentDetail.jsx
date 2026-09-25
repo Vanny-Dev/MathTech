@@ -43,9 +43,6 @@ export default function StudentDetail() {
         <div style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.3rem', letterSpacing: '2px' }}>
           @{student.username}
         </div>
-        <div style={{ fontFamily: 'Nunito, sans-serif', color: 'var(--board-light)', marginTop: '0.2rem' }}>
-          {student.email}
-        </div>
       </div>
 
       {/* Student's reflection on this topic — read only */}

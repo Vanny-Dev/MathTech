@@ -5,22 +5,42 @@ import { Link, useNavigate } from 'react-router-dom';
 import { loginApi } from '../../api/authApi.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 
+// Students sign in with the short code their teacher gives them; teachers keep
+// a normal password.
+const CODE_LENGTH = 6;
+
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate  = useNavigate();
 
-  const [form, setForm]     = useState({ username: '', password: '' });
+  const [role, setRole]     = useState('student');
+  const [form, setForm]     = useState({ username: '', code: '', password: '' });
   const [error, setError]   = useState('');
   const [loading, setLoading] = useState(false);
 
+  const isTeacher = role === 'teacher';
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  // Switching roles clears whatever was typed, so a code is never sent as a
+  // password (or the reverse) just because the user changed their mind.
+  const pickRole = (next) => {
+    if (next === role) return;
+    setRole(next);
+    setError('');
+    setForm({ username: '', code: '', password: '' });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const { data } = await loginApi(form);
+      const { data } = await loginApi(
+        isTeacher
+          ? { role, username: form.username, password: form.password }
+          : { role, username: form.username, code: form.code.trim() }
+      );
       login(data);
       navigate(data.role === 'teacher' ? '/teacher/dashboard' : '/home');
     } catch (err) {
@@ -44,6 +64,28 @@ export default function LoginPage() {
 
           {error && <div style={styles.error}>{error}</div>}
 
+          {/* Who is signing in — decides whether the second field is a code
+              or a password. */}
+          <div style={styles.roleRow} role="group" aria-label="Sign in as">
+            {[
+              { value: 'student', label: 'STUDENT' },
+              { value: 'teacher', label: 'TEACHER' },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => pickRole(opt.value)}
+                aria-pressed={role === opt.value}
+                style={{
+                  ...styles.roleBtn,
+                  ...(role === opt.value ? styles.roleBtnOn : null),
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
           <div style={styles.field}>
             <label style={styles.label}>Username</label>
             <input
@@ -56,18 +98,36 @@ export default function LoginPage() {
             />
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Password</label>
-            <input
-              className="comic-input"
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-            />
-          </div>
+          {isTeacher ? (
+            <div style={styles.field}>
+              <label style={styles.label}>Password</label>
+              <input
+                className="comic-input"
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+          ) : (
+            <div style={styles.field}>
+              <label style={styles.label}>Access Code</label>
+              <input
+                className="comic-input"
+                name="code"
+                value={form.code}
+                onChange={handleChange}
+                placeholder={`${CODE_LENGTH}-character code`}
+                maxLength={CODE_LENGTH}
+                required
+              />
+              <span style={styles.hint}>
+                The {CODE_LENGTH}-character code your teacher gave you.
+              </span>
+            </div>
+          )}
 
           <button
             type="submit"
@@ -78,12 +138,15 @@ export default function LoginPage() {
             {loading ? 'Logging in...' : <>LET&apos;S GO <ArrowRight size={17} /></>}
           </button>
 
-          <p style={styles.link}>
-            No account?{' '}
-            <Link to="/register" style={{ color: 'var(--teal)', fontWeight: 700 }}>
-              Register here
-            </Link>
-          </p>
+          {/* Only students sign themselves up — the teacher account is seeded. */}
+          {!isTeacher && (
+            <p style={styles.link}>
+              No account?{' '}
+              <Link to="/register" style={{ color: 'var(--teal)', fontWeight: 700 }}>
+                Register here
+              </Link>
+            </p>
+          )}
         </form>
       </div>
     </div>
@@ -140,6 +203,30 @@ const styles = {
     letterSpacing: '2px',
     borderBottom: '2px solid var(--ink)',
     paddingBottom: '0.4rem',
+  },
+  roleRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '0.5rem',
+  },
+  roleBtn: {
+    padding: '0.55rem 0.4rem',
+    background: 'var(--white)',
+    border: '3px solid var(--ink)',
+    cursor: 'pointer',
+    fontFamily: 'Fredoka One, cursive',
+    fontSize: '0.9rem',
+    letterSpacing: '1px',
+    color: 'var(--ink)',
+  },
+  roleBtnOn: {
+    background: 'var(--teal)',
+    boxShadow: 'inset 3px 3px 0 rgba(0,0,0,0.15)',
+  },
+  hint: {
+    fontFamily: 'Nunito, sans-serif',
+    fontSize: '0.78rem',
+    color: 'var(--muted-strong)',
   },
   field: {
     display: 'flex',

@@ -5,11 +5,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { registerApi } from '../../api/authApi.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 
+// Students sign in with a short code the teacher gives them, not a password.
+const CODE_LENGTH = 6;
+
 export default function RegisterPage() {
   const { login } = useAuth();
   const navigate  = useNavigate();
 
-  const [form, setForm] = useState({ fullname: '', username: '', email: '', password: '' });
+  const [form, setForm] = useState({ fullname: '', username: '', code: '' });
   const [error, setError]   = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -18,9 +21,16 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    const code = form.code.trim();
+    if (code.length !== CODE_LENGTH) {
+      setError(`Access code must be exactly ${CODE_LENGTH} characters`);
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data } = await registerApi(form);
+      const { data } = await registerApi({ ...form, code });
       login(data);
       navigate('/home');
     } catch (err) {
@@ -44,10 +54,17 @@ export default function RegisterPage() {
           {error && <div style={styles.error}>{error}</div>}
 
           {[
-            { name: 'fullname', label: 'Full Name',   type: 'text',     placeholder: 'Your full name' },
-            { name: 'username', label: 'Username',    type: 'text',     placeholder: 'Your username' },
-            { name: 'email',    label: 'Email',       type: 'email',    placeholder: 'Your email address' },
-            { name: 'password', label: 'Password',    type: 'password', placeholder: 'Your password' },
+            { name: 'fullname', label: 'Full Name', type: 'text', placeholder: 'Your full name' },
+            { name: 'username', label: 'Username',  type: 'text', placeholder: 'Your username' },
+            {
+              name: 'code',
+              label: 'Access Code',
+              type: 'text',
+              placeholder: `${CODE_LENGTH}-character code from your teacher`,
+              maxLength: CODE_LENGTH,
+              minLength: CODE_LENGTH,
+              hint: `${CODE_LENGTH} characters — ask your teacher for it.`,
+            },
           ].map((field) => (
             <div key={field.name} style={styles.field}>
               <label style={styles.label}>{field.label}</label>
@@ -58,8 +75,11 @@ export default function RegisterPage() {
                 value={form[field.name]}
                 onChange={handleChange}
                 placeholder={field.placeholder}
+                maxLength={field.maxLength}
+                minLength={field.minLength}
                 required
               />
+              {field.hint && <span style={styles.hint}>{field.hint}</span>}
             </div>
           ))}
 
@@ -131,6 +151,11 @@ const styles = {
   },
   field: { display: 'flex', flexDirection: 'column', gap: '0.3rem' },
   label: { fontFamily: 'Fredoka One, cursive', fontSize: '0.95rem', letterSpacing: '1px' },
+  hint: {
+    fontFamily: 'Nunito, sans-serif',
+    fontSize: '0.78rem',
+    color: 'var(--muted-strong)',
+  },
   error: {
     background: 'var(--red)', color: 'var(--white)',
     padding: '0.5rem 0.8rem',

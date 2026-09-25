@@ -10,7 +10,6 @@ export default function TeacherStudents() {
   // as cards. Between 700 and 1023px the table fits but the Email column does
   // not, so it is dropped rather than squeezed.
   const isPhone   = useMediaQuery('(max-width: 699px)');
-  const isCompact = useMediaQuery('(max-width: 1023px)');
 
   const [students, setStudents] = useState([]);
   const [search, setSearch]     = useState('');
@@ -40,8 +39,7 @@ export default function TeacherStudents() {
     return ordered.filter(
       (st) =>
         st.fullname.toLowerCase().includes(q) ||
-        st.username.toLowerCase().includes(q) ||
-        (st.email || '').toLowerCase().includes(q)
+        st.username.toLowerCase().includes(q)
     );
   }, [ordered, search]);
 
@@ -115,7 +113,7 @@ export default function TeacherStudents() {
         <Search size={15} strokeWidth={2.5} style={s.searchIcon} />
         <input
           className="comic-input"
-          placeholder={isPhone ? 'Search students...' : 'Search name, username or email...'}
+          placeholder={isPhone ? 'Search students...' : 'Search name or username...'}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ paddingLeft: '2.1rem' }}
@@ -185,7 +183,6 @@ export default function TeacherStudents() {
                     <span style={s.cardNum}>{i + 1}</span>
                   </div>
                   <div style={s.cardMeta}>@{st.username}</div>
-                  <div style={s.cardMeta}>{st.email}</div>
                   <div style={s.cardJoined}>Joined {new Date(st.createdAt).toLocaleDateString()}</div>
                 </div>
               );
@@ -212,14 +209,13 @@ export default function TeacherStudents() {
                   <th style={{ ...s.th, width: '44px' }}>#</th>
                   <th style={s.th}>Full Name</th>
                   <th style={s.th}>Username</th>
-                  {!isCompact && <th style={s.th}>Email</th>}
                   <th style={s.th}>Joined</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={isCompact ? 5 : 6} style={s.emptyCell}>
+                    <td colSpan={5} style={s.emptyCell}>
                       {search ? 'No students match that search' : 'No students registered yet'}
                     </td>
                   </tr>
@@ -258,11 +254,6 @@ export default function TeacherStudents() {
                           </div>
                         </td>
                         <td style={{ ...s.td, color: 'var(--muted-strong)' }}>@{st.username}</td>
-                        {!isCompact && (
-                          <td style={{ ...s.td, color: 'var(--muted-strong)', fontSize: '0.86rem' }}>
-                            {st.email}
-                          </td>
-                        )}
                         <td style={{ ...s.td, ...s.num }}>
                           {new Date(st.createdAt).toLocaleDateString()}
                         </td>
