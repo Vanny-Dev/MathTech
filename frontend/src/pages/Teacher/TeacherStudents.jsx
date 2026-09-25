@@ -47,7 +47,6 @@ export default function TeacherStudents() {
     return ordered.filter(
       (st) =>
         st.fullname.toLowerCase().includes(q) ||
-        st.username.toLowerCase().includes(q) ||
         (st.accessCode || '').toLowerCase().includes(q)
     );
   }, [ordered, search]);
@@ -201,7 +200,7 @@ export default function TeacherStudents() {
         <Search size={15} strokeWidth={2.5} style={s.searchIcon} />
         <input
           className="comic-input"
-          placeholder={isPhone ? 'Search students...' : 'Search name, username or code...'}
+          placeholder={isPhone ? 'Search students...' : 'Search name or code...'}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ paddingLeft: '2.1rem' }}
@@ -270,7 +269,6 @@ export default function TeacherStudents() {
                     <span style={s.cardName}>{st.fullname}</span>
                     <span style={s.cardNum}>{i + 1}</span>
                   </div>
-                  <div style={s.cardMeta}>@{st.username}</div>
                   <div style={s.cardCodeRow} onClick={(e) => e.stopPropagation()}>
                     <span style={st.accessCode ? s.code : s.codeNone}>
                       {st.accessCode || 'no code'}
@@ -310,7 +308,6 @@ export default function TeacherStudents() {
                   </th>
                   <th style={{ ...s.th, width: '44px' }}>#</th>
                   <th style={s.th}>Full Name</th>
-                  <th style={s.th}>Username</th>
                   <th style={s.th}>Access Code</th>
                   <th style={s.th}>Joined</th>
                 </tr>
@@ -318,7 +315,7 @@ export default function TeacherStudents() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={6} style={s.emptyCell}>
+                    <td colSpan={5} style={s.emptyCell}>
                       {search ? 'No students match that search' : 'No students registered yet'}
                     </td>
                   </tr>
@@ -356,7 +353,6 @@ export default function TeacherStudents() {
                             <span style={s.nameText}>{st.fullname}</span>
                           </div>
                         </td>
-                        <td style={{ ...s.td, color: 'var(--muted-strong)' }}>@{st.username}</td>
                         <td style={s.td} onClick={(e) => e.stopPropagation()}>
                           <div style={s.codeCell}>
                             <span style={st.accessCode ? s.code : s.codeNone}>
@@ -409,7 +405,7 @@ export default function TeacherStudents() {
             <ul style={s.nameList}>
               {pickedStudents.slice(0, 8).map((st) => (
                 <li key={st._id}>
-                  {st.fullname} <span style={s.dim}>@{st.username}</span>
+                  {st.fullname}
                 </li>
               ))}
               {pickedStudents.length > 8 && (
@@ -521,7 +517,6 @@ const s = {
     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
   },
   cardNum: { fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0 },
-  cardMeta: { fontFamily: 'Nunito, sans-serif', fontSize: '0.86rem', color: 'var(--ink)', paddingLeft: '2.9rem', overflowWrap: 'anywhere' },
   cardJoined: { fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--muted-strong)', paddingLeft: '2.9rem', marginTop: '0.15rem' },
   empty: {
     textAlign: 'center', color: 'var(--muted)', fontSize: '0.9rem',

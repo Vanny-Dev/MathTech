@@ -225,9 +225,6 @@ export default function TeacherMonitor() {
                       <div style={{ fontFamily: 'Fredoka One, cursive', fontSize: '0.95rem', letterSpacing: '1px' }}>
                         {s.student.fullname}
                       </div>
-                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.75rem', color: 'var(--muted)' }}>
-                        @{s.student.username}
-                      </div>
                     </div>
                   </div>
 

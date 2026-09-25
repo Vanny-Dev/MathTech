@@ -38,13 +38,6 @@ export default function StudentDetail() {
 
       <SectionTitle icon={User}>{student.fullname}</SectionTitle>
 
-      {/* Student info card */}
-      <div className="comic-card-blue" style={{ maxWidth: '500px', marginBottom: '1.5rem' }}>
-        <div style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.3rem', letterSpacing: '2px' }}>
-          @{student.username}
-        </div>
-      </div>
-
       {/* Student's reflection on this topic — read only */}
       <div style={{ maxWidth: '640px', marginInline: 'auto', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
