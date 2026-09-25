@@ -1,22 +1,16 @@
 import React, { useState } from 'react';
-import { ArrowRight, KeyRound } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Logo from '../../components/shared/Logo.jsx';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerApi } from '../../api/authApi.js';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { alertSuccess } from '../../utils/alerts.js';
 
 export default function RegisterPage() {
-  const { login } = useAuth();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
   const [form, setForm]       = useState({ fullname: '', username: '' });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
-
-  // The code the server issued, held until the student confirms they have
-  // written it down. It is never shown again — only their teacher can read it
-  // back — so the account is not opened until they acknowledge it.
-  const [issued, setIssued]   = useState(null);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -25,60 +19,21 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
     try {
-      const { data } = await registerApi(form);
-      setIssued(data);
+      await registerApi(form);
+      // The account exists but the student cannot use it yet — their teacher
+      // holds the access code. Signing them in here would only drop them into
+      // an app they have no way back into, so they are sent to the login form.
+      await alertSuccess(
+        'Account created successfully',
+        'Ask your teacher for your access code, then log in with your username and that code.'
+      );
+      navigate('/login');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
   };
-
-  const enter = () => {
-    login(issued);
-    navigate('/home');
-  };
-
-  if (issued) {
-    return (
-      <div style={styles.page}>
-        <div style={styles.panel}>
-          <div style={{ ...styles.header, background: 'var(--teal)' }}>
-            <Logo width={210} style={{ margin: '0 auto' }} />
-            <p style={styles.subtitle}>Account created</p>
-          </div>
-
-          <div style={styles.form}>
-            <h2 style={styles.formTitle}>YOUR ACCESS CODE</h2>
-
-            <p style={styles.codeIntro}>
-              Write this down. You will type it with your username every time
-              you log in.
-            </p>
-
-            <div style={styles.codeBox}>
-              <KeyRound size={20} strokeWidth={2.5} />
-              <span style={styles.codeText}>{issued.accessCode}</span>
-            </div>
-
-            <p style={styles.codeNote}>
-              Forgot it? Ask your teacher — they can see your code and can give
-              you a new one.
-            </p>
-
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={enter}
-              style={{ width: '100%', padding: '0.8rem', fontSize: '1.1rem' }}
-            >
-              I WROTE IT DOWN <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={styles.page}>
@@ -112,8 +67,8 @@ export default function RegisterPage() {
           ))}
 
           <p style={styles.hint}>
-            No password needed — you will be given a 6-character access code to
-            log in with.
+            No password needed. Your teacher will give you a 6-character access
+            code to log in with.
           </p>
 
           <button
@@ -185,34 +140,6 @@ const styles = {
   field: { display: 'flex', flexDirection: 'column', gap: '0.3rem' },
   label: { fontFamily: 'Fredoka One, cursive', fontSize: '0.95rem', letterSpacing: '1px' },
   hint: {
-    fontFamily: 'Nunito, sans-serif',
-    fontSize: '0.82rem',
-    color: 'var(--muted-strong)',
-    margin: 0,
-  },
-  codeIntro: {
-    fontFamily: 'Nunito, sans-serif',
-    fontSize: '0.9rem',
-    margin: 0,
-  },
-  codeBox: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.6rem',
-    background: 'var(--yellow)',
-    border: '3px solid var(--ink)',
-    boxShadow: '4px 4px 0 var(--ink)',
-    padding: '1rem',
-  },
-  codeText: {
-    fontFamily: 'Fredoka One, cursive',
-    fontSize: '2.1rem',
-    letterSpacing: '0.5rem',
-    // The trailing letter-spacing would push the text off-centre
-    marginLeft: '0.5rem',
-  },
-  codeNote: {
     fontFamily: 'Nunito, sans-serif',
     fontSize: '0.82rem',
     color: 'var(--muted-strong)',
