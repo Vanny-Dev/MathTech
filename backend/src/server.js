@@ -3,6 +3,7 @@ import http from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/database.js';
+import fixIndexes from './config/fixIndexes.js';
 import seedTeacher from './config/seeder.js';
 import seedTopic1Week1 from './config/seedTopic1Week1.js';
 import seedTopic2Week1 from './config/seedTopic2Week1.js';
@@ -24,6 +25,7 @@ dotenv.config();
 
 const startServer = async () => {
   await connectDB();
+  await fixIndexes();
   await seedTeacher();
   await seedTopic1Week1();
   await seedTopic2Week1();
