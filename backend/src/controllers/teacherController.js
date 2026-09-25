@@ -2,6 +2,7 @@ import User       from '../models/User.js';
 import Progress   from '../models/Progress.js';
 import Submission from '../models/Submission.js';
 import Reflection from '../models/Reflection.js';
+import { generateUniqueCode } from '../utils/accessCode.js';
 import {
   REQUIRED_SECTIONS,
   ALL_SECTIONS,
@@ -284,6 +285,67 @@ export const deleteStudents = async (req, res, next) => {
       },
       // ids the caller asked for that were not students (or did not exist)
       skipped: ids.length - targets.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Issue a fresh access code to one student
+// @route   POST /api/teacher/students/:studentId/code
+// @access  Private (Teacher only)
+//
+// Replaces whatever the student had. Used both to hand a code to a student who
+// never had one and to retire a code the class has learned by heart.
+export const resetStudentCode = async (req, res, next) => {
+  try {
+    const { studentId } = req.params;
+
+    const student = await User.findOne({ _id: studentId, role: 'student' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    student.accessCode = await generateUniqueCode(User);
+    await student.save();
+
+    res.json({
+      _id:        student._id,
+      fullname:   student.fullname,
+      username:   student.username,
+      accessCode: student.accessCode,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Give a code to every student who does not have one yet
+// @route   POST /api/teacher/students/codes/issue
+// @access  Private (Teacher only)
+//
+// For the students who existed before codes did. Students who already hold one
+// are left alone, so this is safe to press twice.
+export const issueMissingCodes = async (req, res, next) => {
+  try {
+    const pending = await User.find({
+      role: 'student',
+      $or: [{ accessCode: { $exists: false } }, { accessCode: null }, { accessCode: '' }],
+    });
+
+    const issued = [];
+    for (const student of pending) {
+      student.accessCode = await generateUniqueCode(User);
+      await student.save();
+      issued.push({
+        _id:        student._id,
+        fullname:   student.fullname,
+        username:   student.username,
+        accessCode: student.accessCode,
+      });
+    }
+
+    res.json({
+      issued: issued.length,
+      students: issued,
     });
   } catch (err) {
     next(err);

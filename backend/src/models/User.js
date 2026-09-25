@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { normalizeCode } from '../utils/accessCode.js';
 
 const UserSchema = new mongoose.Schema(
   {
@@ -20,9 +21,23 @@ const UserSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
+    // Teachers sign in with a password. Students do not have one at all — they
+    // use the access code below — so this is only required for a teacher.
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return this.role === 'teacher';
+      },
+    },
+    // The short code the teacher issues to a student and reads out in class.
+    // Stored in plain text on purpose: the teacher must be able to tell a
+    // student who has forgotten it, which a hash makes impossible. It is only
+    // ever returned by teacher-only endpoints.
+    accessCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      set: (v) => (v == null || v === '' ? undefined : normalizeCode(v)),
     },
     role: {
       type: String,
@@ -36,7 +51,7 @@ const UserSchema = new mongoose.Schema(
 );
 
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password') || !this.password) return next();
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -44,7 +59,17 @@ UserSchema.pre('save', async function (next) {
 });
 
 UserSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+/**
+ * Codes are compared case-insensitively and ignoring stray spaces: a student
+ * copying one off the board should not be locked out over capitalisation.
+ */
+UserSchema.methods.matchAccessCode = function (enteredCode) {
+  if (!this.accessCode) return false;
+  return this.accessCode === normalizeCode(enteredCode);
 };
 
 const User = mongoose.model('User', UserSchema);

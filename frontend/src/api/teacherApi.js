@@ -7,3 +7,9 @@ export const getClassSummaryApi  = (moduleId)                 => api.get(`/teach
 
 // Teacher only — permanently removes the accounts and everything they own
 export const deleteStudentsApi   = (studentIds)               => api.post('/teacher/students/delete', { studentIds });
+
+// Teacher only — issues a brand new access code, replacing the student's old one
+export const resetStudentCodeApi = (studentId)          => api.post(`/teacher/students/${studentId}/code`);
+
+// Teacher only — gives a code to every student who does not have one yet
+export const issueMissingCodesApi= ()                    => api.post('/teacher/students/codes/issue');

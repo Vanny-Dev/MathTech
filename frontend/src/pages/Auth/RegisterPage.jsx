@@ -1,44 +1,84 @@
 import React, { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, KeyRound } from 'lucide-react';
 import Logo from '../../components/shared/Logo.jsx';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerApi } from '../../api/authApi.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 
-// Students sign in with a short code the teacher gives them, not a password.
-const CODE_LENGTH = 6;
-
 export default function RegisterPage() {
   const { login } = useAuth();
   const navigate  = useNavigate();
 
-  const [form, setForm] = useState({ fullname: '', username: '', code: '' });
-  const [error, setError]   = useState('');
+  const [form, setForm]       = useState({ fullname: '', username: '' });
+  const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
+
+  // The code the server issued, held until the student confirms they have
+  // written it down. It is never shown again — only their teacher can read it
+  // back — so the account is not opened until they acknowledge it.
+  const [issued, setIssued]   = useState(null);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    const code = form.code.trim();
-    if (code.length !== CODE_LENGTH) {
-      setError(`Access code must be exactly ${CODE_LENGTH} characters`);
-      return;
-    }
-
     setLoading(true);
     try {
-      const { data } = await registerApi({ ...form, code });
-      login(data);
-      navigate('/home');
+      const { data } = await registerApi(form);
+      setIssued(data);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
   };
+
+  const enter = () => {
+    login(issued);
+    navigate('/home');
+  };
+
+  if (issued) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.panel}>
+          <div style={{ ...styles.header, background: 'var(--teal)' }}>
+            <Logo width={210} style={{ margin: '0 auto' }} />
+            <p style={styles.subtitle}>Account created</p>
+          </div>
+
+          <div style={styles.form}>
+            <h2 style={styles.formTitle}>YOUR ACCESS CODE</h2>
+
+            <p style={styles.codeIntro}>
+              Write this down. You will type it with your username every time
+              you log in.
+            </p>
+
+            <div style={styles.codeBox}>
+              <KeyRound size={20} strokeWidth={2.5} />
+              <span style={styles.codeText}>{issued.accessCode}</span>
+            </div>
+
+            <p style={styles.codeNote}>
+              Forgot it? Ask your teacher — they can see your code and can give
+              you a new one.
+            </p>
+
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={enter}
+              style={{ width: '100%', padding: '0.8rem', fontSize: '1.1rem' }}
+            >
+              I WROTE IT DOWN <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.page}>
@@ -56,15 +96,6 @@ export default function RegisterPage() {
           {[
             { name: 'fullname', label: 'Full Name', type: 'text', placeholder: 'Your full name' },
             { name: 'username', label: 'Username',  type: 'text', placeholder: 'Your username' },
-            {
-              name: 'code',
-              label: 'Access Code',
-              type: 'text',
-              placeholder: `${CODE_LENGTH}-character code from your teacher`,
-              maxLength: CODE_LENGTH,
-              minLength: CODE_LENGTH,
-              hint: `${CODE_LENGTH} characters — ask your teacher for it.`,
-            },
           ].map((field) => (
             <div key={field.name} style={styles.field}>
               <label style={styles.label}>{field.label}</label>
@@ -75,13 +106,15 @@ export default function RegisterPage() {
                 value={form[field.name]}
                 onChange={handleChange}
                 placeholder={field.placeholder}
-                maxLength={field.maxLength}
-                minLength={field.minLength}
                 required
               />
-              {field.hint && <span style={styles.hint}>{field.hint}</span>}
             </div>
           ))}
+
+          <p style={styles.hint}>
+            No password needed — you will be given a 6-character access code to
+            log in with.
+          </p>
 
           <button
             type="submit"
@@ -153,8 +186,37 @@ const styles = {
   label: { fontFamily: 'Fredoka One, cursive', fontSize: '0.95rem', letterSpacing: '1px' },
   hint: {
     fontFamily: 'Nunito, sans-serif',
-    fontSize: '0.78rem',
+    fontSize: '0.82rem',
     color: 'var(--muted-strong)',
+    margin: 0,
+  },
+  codeIntro: {
+    fontFamily: 'Nunito, sans-serif',
+    fontSize: '0.9rem',
+    margin: 0,
+  },
+  codeBox: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.6rem',
+    background: 'var(--yellow)',
+    border: '3px solid var(--ink)',
+    boxShadow: '4px 4px 0 var(--ink)',
+    padding: '1rem',
+  },
+  codeText: {
+    fontFamily: 'Fredoka One, cursive',
+    fontSize: '2.1rem',
+    letterSpacing: '0.5rem',
+    // The trailing letter-spacing would push the text off-centre
+    marginLeft: '0.5rem',
+  },
+  codeNote: {
+    fontFamily: 'Nunito, sans-serif',
+    fontSize: '0.82rem',
+    color: 'var(--muted-strong)',
+    margin: 0,
   },
   error: {
     background: 'var(--red)', color: 'var(--white)',

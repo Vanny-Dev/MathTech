@@ -1,9 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Users, Trash2, TriangleAlert, X, Search, CheckSquare, Square } from 'lucide-react';
+import { Users, Trash2, TriangleAlert, X, Search, CheckSquare, Square, KeyRound, RefreshCw } from 'lucide-react';
 import SectionTitle from '../../components/shared/SectionTitle.jsx';
 import Loader from '../../components/shared/Loader.jsx';
 import useMediaQuery from '../../hooks/useMediaQuery.js';
-import { getAllStudentsApi, deleteStudentsApi } from '../../api/teacherApi.js';
+import {
+  getAllStudentsApi,
+  deleteStudentsApi,
+  resetStudentCodeApi,
+  issueMissingCodesApi,
+} from '../../api/teacherApi.js';
 
 export default function TeacherStudents() {
   // A table cannot be read on a phone, so below 700px the same data is shown
@@ -18,6 +23,9 @@ export default function TeacherStudents() {
   const [confirm, setConfirm]   = useState(false);
   const [busy, setBusy]         = useState(false);
   const [notice, setNotice]     = useState(null);
+  // id of the student whose code is being replaced, so only that row spins
+  const [codeBusy, setCodeBusy] = useState(null);
+  const [issuing, setIssuing]   = useState(false);
 
   useEffect(() => {
     getAllStudentsApi()
@@ -39,7 +47,8 @@ export default function TeacherStudents() {
     return ordered.filter(
       (st) =>
         st.fullname.toLowerCase().includes(q) ||
-        st.username.toLowerCase().includes(q)
+        st.username.toLowerCase().includes(q) ||
+        (st.accessCode || '').toLowerCase().includes(q)
     );
   }, [ordered, search]);
 
@@ -66,6 +75,64 @@ export default function TeacherStudents() {
 
   const pickedStudents = ordered.filter((st) => picked.has(st._id));
   const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+  // Replaces one student's code. Confirmed first because the old code stops
+  // working the moment this returns, and the student is holding it.
+  const handleResetCode = async (st) => {
+    const yes = window.confirm(
+      `Give ${st.fullname} a new access code?\n\n` +
+      `Their current code${st.accessCode ? ` (${st.accessCode})` : ''} will stop working straight away.`
+    );
+    if (!yes) return;
+
+    setCodeBusy(st._id);
+    setNotice(null);
+    try {
+      const { data } = await resetStudentCodeApi(st._id);
+      setStudents((prev) =>
+        prev.map((row) => (row._id === st._id ? { ...row, accessCode: data.accessCode } : row))
+      );
+      setNotice({ type: 'ok', text: `${data.fullname}'s new code is ${data.accessCode}` });
+    } catch (err) {
+      setNotice({
+        type: 'err',
+        text: err.response?.data?.message || 'Could not issue a new code',
+      });
+    } finally {
+      setCodeBusy(null);
+    }
+  };
+
+  // For students who registered before codes existed. Leaves alone anyone who
+  // already has one, so pressing it twice changes nothing.
+  const handleIssueMissing = async () => {
+    setIssuing(true);
+    setNotice(null);
+    try {
+      const { data } = await issueMissingCodesApi();
+      if (data.issued === 0) {
+        setNotice({ type: 'ok', text: 'Every student already has a code.' });
+      } else {
+        const byId = Object.fromEntries(data.students.map((x) => [x._id, x.accessCode]));
+        setStudents((prev) =>
+          prev.map((row) => (byId[row._id] ? { ...row, accessCode: byId[row._id] } : row))
+        );
+        setNotice({
+          type: 'ok',
+          text:
+            `Issued ${plural(data.issued, 'code')}. Read each one out to the student — ` +
+            `their old password no longer works.`,
+        });
+      }
+    } catch (err) {
+      setNotice({
+        type: 'err',
+        text: err.response?.data?.message || 'Could not issue the missing codes',
+      });
+    } finally {
+      setIssuing(false);
+    }
+  };
 
   const handleDelete = async () => {
     setBusy(true);
@@ -96,6 +163,7 @@ export default function TeacherStudents() {
   if (loading) return <Loader text="Loading students..." />;
 
   const anyPicked = picked.size > 0;
+  const missingCodes = students.filter((st) => !st.accessCode).length;
 
   return (
     <div style={{ paddingBottom: isPhone && anyPicked ? '5.5rem' : 0 }}>
@@ -107,13 +175,33 @@ export default function TeacherStudents() {
         </div>
       )}
 
+      {/* Students who registered before access codes existed cannot log in
+          until they are given one. */}
+      {missingCodes > 0 && (
+        <div style={s.migrate}>
+          <KeyRound size={16} strokeWidth={2.5} />
+          <span style={s.migrateText}>
+            {missingCodes} student{missingCodes === 1 ? ' has' : 's have'} no access code yet
+            and cannot log in.
+          </span>
+          <button
+            className="btn btn-primary"
+            style={s.migrateBtn}
+            onClick={handleIssueMissing}
+            disabled={issuing}
+          >
+            {issuing ? 'Issuing...' : 'Issue codes'}
+          </button>
+        </div>
+      )}
+
       {/* Search only. Delete lives in the selection bar below, so a
           destructive button is never sitting next to a text field. */}
       <div style={s.searchWrap}>
         <Search size={15} strokeWidth={2.5} style={s.searchIcon} />
         <input
           className="comic-input"
-          placeholder={isPhone ? 'Search students...' : 'Search name or username...'}
+          placeholder={isPhone ? 'Search students...' : 'Search name, username or code...'}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ paddingLeft: '2.1rem' }}
@@ -183,6 +271,20 @@ export default function TeacherStudents() {
                     <span style={s.cardNum}>{i + 1}</span>
                   </div>
                   <div style={s.cardMeta}>@{st.username}</div>
+                  <div style={s.cardCodeRow} onClick={(e) => e.stopPropagation()}>
+                    <span style={st.accessCode ? s.code : s.codeNone}>
+                      {st.accessCode || 'no code'}
+                    </span>
+                    <button
+                      style={s.codeBtn}
+                      onClick={() => handleResetCode(st)}
+                      disabled={codeBusy === st._id}
+                      aria-label={`New access code for ${st.fullname}`}
+                    >
+                      <RefreshCw size={12} strokeWidth={2.5} />
+                      {codeBusy === st._id ? 'Working' : 'New code'}
+                    </button>
+                  </div>
                   <div style={s.cardJoined}>Joined {new Date(st.createdAt).toLocaleDateString()}</div>
                 </div>
               );
@@ -209,13 +311,14 @@ export default function TeacherStudents() {
                   <th style={{ ...s.th, width: '44px' }}>#</th>
                   <th style={s.th}>Full Name</th>
                   <th style={s.th}>Username</th>
+                  <th style={s.th}>Access Code</th>
                   <th style={s.th}>Joined</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={s.emptyCell}>
+                    <td colSpan={6} style={s.emptyCell}>
                       {search ? 'No students match that search' : 'No students registered yet'}
                     </td>
                   </tr>
@@ -254,6 +357,22 @@ export default function TeacherStudents() {
                           </div>
                         </td>
                         <td style={{ ...s.td, color: 'var(--muted-strong)' }}>@{st.username}</td>
+                        <td style={s.td} onClick={(e) => e.stopPropagation()}>
+                          <div style={s.codeCell}>
+                            <span style={st.accessCode ? s.code : s.codeNone}>
+                              {st.accessCode || 'no code'}
+                            </span>
+                            <button
+                              style={s.codeBtn}
+                              onClick={() => handleResetCode(st)}
+                              disabled={codeBusy === st._id}
+                              aria-label={`New access code for ${st.fullname}`}
+                            >
+                              <RefreshCw size={12} strokeWidth={2.5} />
+                              {codeBusy === st._id ? 'Working' : 'New code'}
+                            </button>
+                          </div>
+                        </td>
                         <td style={{ ...s.td, ...s.num }}>
                           {new Date(st.createdAt).toLocaleDateString()}
                         </td>
@@ -314,6 +433,32 @@ export default function TeacherStudents() {
 }
 
 const s = {
+  migrate: {
+    display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap',
+    maxWidth: '860px', marginBottom: '0.8rem',
+    background: 'var(--yellow)', border: '3px solid var(--ink)', boxShadow: '3px 3px 0 var(--ink)',
+    padding: '0.6rem 0.8rem',
+  },
+  migrateText: { fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.85rem', flex: 1 },
+  migrateBtn: { padding: '0.35rem 0.8rem', fontSize: '0.82rem' },
+
+  code: {
+    fontFamily: 'Fredoka One, cursive', fontSize: '0.95rem', letterSpacing: '2px',
+    background: 'var(--paper-dark)', border: '2px solid var(--ink)', padding: '0.1rem 0.45rem',
+  },
+  codeNone: {
+    fontFamily: 'Nunito, sans-serif', fontSize: '0.8rem', fontWeight: 700,
+    color: 'var(--muted)', fontStyle: 'italic',
+  },
+  codeCell: { display: 'flex', alignItems: 'center', gap: '0.45rem' },
+  cardCodeRow: { display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.3rem' },
+  codeBtn: {
+    display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+    background: 'var(--white)', border: '2px solid var(--ink)',
+    padding: '0.15rem 0.45rem', cursor: 'pointer',
+    fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.72rem',
+  },
+
   searchWrap: { position: 'relative', width: '100%', maxWidth: '380px', marginBottom: '0.8rem' },
   searchIcon: { position: 'absolute', left: '0.65rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' },
 

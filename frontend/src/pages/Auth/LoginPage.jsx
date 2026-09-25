@@ -20,7 +20,12 @@ export default function LoginPage() {
 
   const isTeacher = role === 'teacher';
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    // Codes are issued in capitals and read off a board; accepting lower case
+    // and showing it back as capitals saves a failed login over shift key.
+    setForm({ ...form, [name]: name === 'code' ? value.toUpperCase() : value });
+  };
 
   // Switching roles clears whatever was typed, so a code is never sent as a
   // password (or the reverse) just because the user changed their mind.
