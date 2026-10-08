@@ -83,10 +83,8 @@ export const getModuleProgress = async (req, res, next) => {
 
       return {
         student: {
-          _id:      student._id,
-          fullname: student.fullname,
-          username: student.username,
-          email:    student.email,
+          _id:        student._id,
+          accessCode: student.accessCode,
         },
         completedSections:  progress?.completedSections || {},
         completedCount,                          // out of requiredTotal
@@ -138,10 +136,8 @@ export const getStudentDetail = async (req, res, next) => {
 
     res.json({
       student: {
-        _id:      student._id,
-        fullname: student.fullname,
-        username: student.username,
-        email:    student.email,
+        _id:        student._id,
+        accessCode: student.accessCode,
       },
       progress: progress || null,
       reflection: reflection
@@ -309,8 +305,6 @@ export const resetStudentCode = async (req, res, next) => {
 
     res.json({
       _id:        student._id,
-      fullname:   student.fullname,
-      username:   student.username,
       accessCode: student.accessCode,
     });
   } catch (err) {
@@ -337,8 +331,6 @@ export const issueMissingCodes = async (req, res, next) => {
       await student.save();
       issued.push({
         _id:        student._id,
-        fullname:   student.fullname,
-        username:   student.username,
         accessCode: student.accessCode,
       });
     }

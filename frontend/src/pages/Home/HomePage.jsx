@@ -24,7 +24,7 @@ export default function HomePage() {
 
       <div className="comic-card-blue" style={{ marginBottom: '1.5rem' }}>
         <h2 style={{ fontFamily: 'Fredoka One, cursive', fontSize: '1.5rem', letterSpacing: '2px' }}>
-          Welcome back, {user?.fullname}.
+          Welcome back, {user?.fullname || user?.username}.
         </h2>
         <p style={{ fontFamily: 'Nunito, sans-serif', marginTop: '0.4rem' }}>
           Ready to learn Mathematics through comic-style lessons? Let&apos;s go.

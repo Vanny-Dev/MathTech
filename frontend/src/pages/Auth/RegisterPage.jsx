@@ -8,7 +8,7 @@ import { alertSuccess } from '../../utils/alerts.js';
 export default function RegisterPage() {
   const navigate = useNavigate();
 
-  const [form, setForm]       = useState({ fullname: '', username: '' });
+  const [form, setForm]       = useState({ username: '' });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -49,7 +49,6 @@ export default function RegisterPage() {
           {error && <div style={styles.error}>{error}</div>}
 
           {[
-            { name: 'fullname', label: 'Full Name', type: 'text', placeholder: 'Your full name' },
             { name: 'username', label: 'Username',  type: 'text', placeholder: 'Your username' },
           ].map((field) => (
             <div key={field.name} style={styles.field}>
