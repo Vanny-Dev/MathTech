@@ -211,20 +211,10 @@ export default function TeacherMonitor() {
             return (
               <div key={s.student._id} className="comic-card" style={{ padding: '0.8rem 1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                  {/* Avatar + name */}
+                  {/* Student, identified by access code */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: '180px' }}>
-                    <div style={{
-                      width: '36px', height: '36px',
-                      background: 'var(--teal)', border: '2px solid var(--ink)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontFamily: 'Fredoka One, cursive', fontSize: '1.1rem', flexShrink: 0,
-                    }}>
-                      {s.student.fullname[0]?.toUpperCase()}
-                    </div>
-                    <div>
-                      <div style={{ fontFamily: 'Fredoka One, cursive', fontSize: '0.95rem', letterSpacing: '1px' }}>
-                        {s.student.fullname}
-                      </div>
+                    <div style={{ fontFamily: 'Fredoka One, cursive', fontSize: '0.95rem', letterSpacing: '1px' }}>
+                      Student {s.student.accessCode || ''}
                     </div>
                   </div>
 

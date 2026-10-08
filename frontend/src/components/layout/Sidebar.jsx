@@ -70,9 +70,9 @@ export default function Sidebar({ isOpen, onClose, isMobile }) {
       </div>
 
       <div style={styles.userBox}>
-        <div style={styles.avatar}>{user?.fullname?.[0]?.toUpperCase()}</div>
+        <div style={styles.avatar}>{(user?.fullname || user?.username)?.[0]?.toUpperCase()}</div>
         <div>
-          <div style={styles.userName}>{user?.fullname}</div>
+          <div style={styles.userName}>{user?.fullname || user?.username}</div>
           <div style={styles.userRole}>{user?.role}</div>
         </div>
       </div>

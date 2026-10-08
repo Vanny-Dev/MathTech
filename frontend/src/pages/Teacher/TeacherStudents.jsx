@@ -34,21 +34,18 @@ export default function TeacherStudents() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Sorted once, then numbered by position — so after a delete the list
-  // renumbers 1..n with no gaps rather than keeping the old positions.
+  // Sorted once (oldest account first), then numbered by position — so after
+  // a delete the list renumbers 1..n with no gaps rather than keeping the old
+  // positions. Students are identified by access code only, not by name.
   const ordered = useMemo(
-    () => [...students].sort((a, b) => a.fullname.localeCompare(b.fullname)),
+    () => [...students].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)),
     [students]
   );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return ordered;
-    return ordered.filter(
-      (st) =>
-        st.fullname.toLowerCase().includes(q) ||
-        (st.accessCode || '').toLowerCase().includes(q)
-    );
+    return ordered.filter((st) => (st.accessCode || '').toLowerCase().includes(q));
   }, [ordered, search]);
 
   const toggle = (id) =>
@@ -79,7 +76,7 @@ export default function TeacherStudents() {
   // working the moment this returns, and the student is holding it.
   const handleResetCode = async (st) => {
     const yes = window.confirm(
-      `Give ${st.fullname} a new access code?\n\n` +
+      `Give this student a new access code?\n\n` +
       `Their current code${st.accessCode ? ` (${st.accessCode})` : ''} will stop working straight away.`
     );
     if (!yes) return;
@@ -91,7 +88,7 @@ export default function TeacherStudents() {
       setStudents((prev) =>
         prev.map((row) => (row._id === st._id ? { ...row, accessCode: data.accessCode } : row))
       );
-      setNotice({ type: 'ok', text: `${data.fullname}'s new code is ${data.accessCode}` });
+      setNotice({ type: 'ok', text: `New code issued: ${data.accessCode}` });
     } catch (err) {
       setNotice({
         type: 'err',
@@ -200,7 +197,7 @@ export default function TeacherStudents() {
         <Search size={15} strokeWidth={2.5} style={s.searchIcon} />
         <input
           className="comic-input"
-          placeholder={isPhone ? 'Search students...' : 'Search name or code...'}
+          placeholder={isPhone ? 'Search students...' : 'Search by access code...'}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ paddingLeft: '2.1rem' }}
@@ -262,12 +259,10 @@ export default function TeacherStudents() {
                       checked={on}
                       onChange={() => toggle(st._id)}
                       onClick={(e) => e.stopPropagation()}
-                      aria-label={`Select ${st.fullname}`}
+                      aria-label={`Select student ${i + 1}`}
                       style={s.checkbox}
                     />
-                    <span style={s.avatar}>{st.fullname[0]?.toUpperCase()}</span>
-                    <span style={s.cardName}>{st.fullname}</span>
-                    <span style={s.cardNum}>{i + 1}</span>
+                    <span style={s.cardName}>Student {i + 1}</span>
                   </div>
                   <div style={s.cardCodeRow} onClick={(e) => e.stopPropagation()}>
                     <span style={st.accessCode ? s.code : s.codeNone}>
@@ -277,7 +272,7 @@ export default function TeacherStudents() {
                       style={s.codeBtn}
                       onClick={() => handleResetCode(st)}
                       disabled={codeBusy === st._id}
-                      aria-label={`New access code for ${st.fullname}`}
+                      aria-label={`New access code for student ${i + 1}`}
                     >
                       <RefreshCw size={12} strokeWidth={2.5} />
                       {codeBusy === st._id ? 'Working' : 'New code'}
@@ -307,7 +302,6 @@ export default function TeacherStudents() {
                     />
                   </th>
                   <th style={{ ...s.th, width: '44px' }}>#</th>
-                  <th style={s.th}>Full Name</th>
                   <th style={s.th}>Access Code</th>
                   <th style={s.th}>Joined</th>
                 </tr>
@@ -315,7 +309,7 @@ export default function TeacherStudents() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={s.emptyCell}>
+                    <td colSpan={4} style={s.emptyCell}>
                       {search ? 'No students match that search' : 'No students registered yet'}
                     </td>
                   </tr>
@@ -341,18 +335,12 @@ export default function TeacherStudents() {
                             checked={on}
                             onChange={() => toggle(st._id)}
                             onClick={(e) => e.stopPropagation()}
-                            aria-label={`Select ${st.fullname}`}
+                            aria-label={`Select student ${i + 1}`}
                             style={s.checkbox}
                           />
                         </td>
                         {/* Numbered by position, so the list stays 1..n after any delete */}
                         <td style={{ ...s.td, ...s.num }}>{i + 1}</td>
-                        <td style={{ ...s.td, fontWeight: 700 }}>
-                          <div style={s.nameCell}>
-                            <span style={s.avatar}>{st.fullname[0]?.toUpperCase()}</span>
-                            <span style={s.nameText}>{st.fullname}</span>
-                          </div>
-                        </td>
                         <td style={s.td} onClick={(e) => e.stopPropagation()}>
                           <div style={s.codeCell}>
                             <span style={st.accessCode ? s.code : s.codeNone}>
@@ -362,7 +350,7 @@ export default function TeacherStudents() {
                               style={s.codeBtn}
                               onClick={() => handleResetCode(st)}
                               disabled={codeBusy === st._id}
-                              aria-label={`New access code for ${st.fullname}`}
+                              aria-label={`New access code for student ${i + 1}`}
                             >
                               <RefreshCw size={12} strokeWidth={2.5} />
                               {codeBusy === st._id ? 'Working' : 'New code'}
@@ -405,7 +393,7 @@ export default function TeacherStudents() {
             <ul style={s.nameList}>
               {pickedStudents.slice(0, 8).map((st) => (
                 <li key={st._id}>
-                  {st.fullname}
+                  {st.accessCode || 'Student without a code'}
                 </li>
               ))}
               {pickedStudents.length > 8 && (
@@ -496,8 +484,6 @@ const s = {
   row: { borderBottom: '1px solid var(--paper-dark)', cursor: 'pointer' },
   td: { padding: '0.55rem 0.9rem', fontSize: '0.9rem' },
   num: { fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', color: 'var(--muted-strong)', whiteSpace: 'nowrap' },
-  nameCell: { display: 'flex', alignItems: 'center', gap: '0.55rem', minWidth: 0 },
-  nameText: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   emptyCell: { padding: '1.6rem', textAlign: 'center', color: 'var(--muted)', fontSize: '0.9rem' },
 
   // Phone cards
@@ -516,7 +502,6 @@ const s = {
     fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.95rem',
     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
   },
-  cardNum: { fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0 },
   cardJoined: { fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: 'var(--muted-strong)', paddingLeft: '2.9rem', marginTop: '0.15rem' },
   empty: {
     textAlign: 'center', color: 'var(--muted)', fontSize: '0.9rem',
@@ -525,12 +510,6 @@ const s = {
   },
 
   checkbox: { width: '18px', height: '18px', accentColor: 'var(--red)', cursor: 'pointer', flexShrink: 0 },
-  avatar: {
-    width: '28px', height: '28px', flexShrink: 0,
-    background: 'var(--teal)', border: '2px solid var(--ink)',
-    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-    fontFamily: 'Fredoka One, cursive', fontSize: '0.9rem',
-  },
 
   notice: {
     maxWidth: '860px', marginBottom: '1rem',

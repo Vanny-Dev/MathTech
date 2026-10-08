@@ -36,7 +36,7 @@ export default function StudentDetail() {
         <ArrowLeft size={15} /> Back
       </button>
 
-      <SectionTitle icon={User}>{student.fullname}</SectionTitle>
+      <SectionTitle icon={User}>Student {student.accessCode || ''}</SectionTitle>
 
       {/* Student's reflection on this topic — read only */}
       <div style={{ maxWidth: '640px', marginInline: 'auto', marginBottom: '1.5rem' }}>

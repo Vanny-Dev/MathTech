@@ -4,9 +4,13 @@ import { normalizeCode } from '../utils/accessCode.js';
 
 const UserSchema = new mongoose.Schema(
   {
+    // Students no longer give a name when they register, so only a teacher
+    // is required to have one.
     fullname: {
       type: String,
-      required: true,
+      required: function () {
+        return this.role === 'teacher';
+      },
     },
     username: {
       type: String,

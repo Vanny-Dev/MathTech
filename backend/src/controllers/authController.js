@@ -6,17 +6,17 @@ import { CODE_LENGTH, generateUniqueCode } from '../utils/accessCode.js';
 // @route   POST /api/auth/register
 // @access  Public
 //
-// The student gives a name and a username only. A code is issued for them at
+// The student gives a username only. A code is issued for them at
 // the same time, but it is never sent back here — the teacher reads it off
 // their dashboard and hands it over. So this creates the account and nothing
 // else: no code in the response, and no token, because the student is not
 // signed in until they log in with the code they were given.
 export const register = async (req, res, next) => {
   try {
-    const { fullname, username } = req.body;
+    const { username } = req.body;
 
-    if (!fullname || !username) {
-      return res.status(400).json({ message: 'All fields are required' });
+    if (!username) {
+      return res.status(400).json({ message: 'Username is required' });
     }
 
     const usernameExists = await User.findOne({ username });
@@ -27,7 +27,6 @@ export const register = async (req, res, next) => {
     const accessCode = await generateUniqueCode(User);
 
     const user = await User.create({
-      fullname,
       username,
       accessCode,
       role: 'student', // always student, no exceptions
@@ -35,7 +34,6 @@ export const register = async (req, res, next) => {
 
     res.status(201).json({
       _id:      user._id,
-      fullname: user.fullname,
       username: user.username,
       role:     user.role,
       message:  'Account created. Ask your teacher for your access code.',
