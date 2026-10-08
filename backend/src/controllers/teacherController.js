@@ -84,6 +84,7 @@ export const getModuleProgress = async (req, res, next) => {
       return {
         student: {
           _id:        student._id,
+          username:   student.username,
           accessCode: student.accessCode,
         },
         completedSections:  progress?.completedSections || {},
@@ -137,6 +138,7 @@ export const getStudentDetail = async (req, res, next) => {
     res.json({
       student: {
         _id:        student._id,
+        username:   student.username,
         accessCode: student.accessCode,
       },
       progress: progress || null,
@@ -305,6 +307,7 @@ export const resetStudentCode = async (req, res, next) => {
 
     res.json({
       _id:        student._id,
+      username:   student.username,
       accessCode: student.accessCode,
     });
   } catch (err) {
@@ -331,6 +334,7 @@ export const issueMissingCodes = async (req, res, next) => {
       await student.save();
       issued.push({
         _id:        student._id,
+        username:   student.username,
         accessCode: student.accessCode,
       });
     }

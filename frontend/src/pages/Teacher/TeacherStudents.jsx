@@ -34,18 +34,22 @@ export default function TeacherStudents() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Sorted once (oldest account first), then numbered by position — so after
-  // a delete the list renumbers 1..n with no gaps rather than keeping the old
-  // positions. Students are identified by access code only, not by name.
+  // Sorted once, then numbered by position — so after a delete the list
+  // renumbers 1..n with no gaps rather than keeping the old positions.
+  // Students are shown by username only, never by full name.
   const ordered = useMemo(
-    () => [...students].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)),
+    () => [...students].sort((a, b) => a.username.localeCompare(b.username)),
     [students]
   );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return ordered;
-    return ordered.filter((st) => (st.accessCode || '').toLowerCase().includes(q));
+    return ordered.filter(
+      (st) =>
+        st.username.toLowerCase().includes(q) ||
+        (st.accessCode || '').toLowerCase().includes(q)
+    );
   }, [ordered, search]);
 
   const toggle = (id) =>
@@ -76,7 +80,7 @@ export default function TeacherStudents() {
   // working the moment this returns, and the student is holding it.
   const handleResetCode = async (st) => {
     const yes = window.confirm(
-      `Give this student a new access code?\n\n` +
+      `Give @${st.username} a new access code?\n\n` +
       `Their current code${st.accessCode ? ` (${st.accessCode})` : ''} will stop working straight away.`
     );
     if (!yes) return;
@@ -88,7 +92,7 @@ export default function TeacherStudents() {
       setStudents((prev) =>
         prev.map((row) => (row._id === st._id ? { ...row, accessCode: data.accessCode } : row))
       );
-      setNotice({ type: 'ok', text: `New code issued: ${data.accessCode}` });
+      setNotice({ type: 'ok', text: `@${data.username}'s new code is ${data.accessCode}` });
     } catch (err) {
       setNotice({
         type: 'err',
@@ -197,7 +201,7 @@ export default function TeacherStudents() {
         <Search size={15} strokeWidth={2.5} style={s.searchIcon} />
         <input
           className="comic-input"
-          placeholder={isPhone ? 'Search students...' : 'Search by access code...'}
+          placeholder={isPhone ? 'Search students...' : 'Search username or code...'}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ paddingLeft: '2.1rem' }}
@@ -259,10 +263,10 @@ export default function TeacherStudents() {
                       checked={on}
                       onChange={() => toggle(st._id)}
                       onClick={(e) => e.stopPropagation()}
-                      aria-label={`Select student ${i + 1}`}
+                      aria-label={`Select @${st.username}`}
                       style={s.checkbox}
                     />
-                    <span style={s.cardName}>Student {i + 1}</span>
+                    <span style={s.cardName}>@{st.username}</span>
                   </div>
                   <div style={s.cardCodeRow} onClick={(e) => e.stopPropagation()}>
                     <span style={st.accessCode ? s.code : s.codeNone}>
@@ -272,7 +276,7 @@ export default function TeacherStudents() {
                       style={s.codeBtn}
                       onClick={() => handleResetCode(st)}
                       disabled={codeBusy === st._id}
-                      aria-label={`New access code for student ${i + 1}`}
+                      aria-label={`New access code for @${st.username}`}
                     >
                       <RefreshCw size={12} strokeWidth={2.5} />
                       {codeBusy === st._id ? 'Working' : 'New code'}
@@ -302,6 +306,7 @@ export default function TeacherStudents() {
                     />
                   </th>
                   <th style={{ ...s.th, width: '44px' }}>#</th>
+                  <th style={s.th}>Username</th>
                   <th style={s.th}>Access Code</th>
                   <th style={s.th}>Joined</th>
                 </tr>
@@ -309,7 +314,7 @@ export default function TeacherStudents() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={s.emptyCell}>
+                    <td colSpan={5} style={s.emptyCell}>
                       {search ? 'No students match that search' : 'No students registered yet'}
                     </td>
                   </tr>
@@ -335,12 +340,13 @@ export default function TeacherStudents() {
                             checked={on}
                             onChange={() => toggle(st._id)}
                             onClick={(e) => e.stopPropagation()}
-                            aria-label={`Select student ${i + 1}`}
+                            aria-label={`Select @${st.username}`}
                             style={s.checkbox}
                           />
                         </td>
                         {/* Numbered by position, so the list stays 1..n after any delete */}
                         <td style={{ ...s.td, ...s.num }}>{i + 1}</td>
+                        <td style={{ ...s.td, fontWeight: 700 }}>@{st.username}</td>
                         <td style={s.td} onClick={(e) => e.stopPropagation()}>
                           <div style={s.codeCell}>
                             <span style={st.accessCode ? s.code : s.codeNone}>
@@ -350,7 +356,7 @@ export default function TeacherStudents() {
                               style={s.codeBtn}
                               onClick={() => handleResetCode(st)}
                               disabled={codeBusy === st._id}
-                              aria-label={`New access code for student ${i + 1}`}
+                              aria-label={`New access code for @${st.username}`}
                             >
                               <RefreshCw size={12} strokeWidth={2.5} />
                               {codeBusy === st._id ? 'Working' : 'New code'}
@@ -393,7 +399,7 @@ export default function TeacherStudents() {
             <ul style={s.nameList}>
               {pickedStudents.slice(0, 8).map((st) => (
                 <li key={st._id}>
-                  {st.accessCode || 'Student without a code'}
+                  @{st.username}
                 </li>
               ))}
               {pickedStudents.length > 8 && (
