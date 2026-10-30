@@ -26,6 +26,7 @@ export default function IndependentActivityPage() {
   const [current, setCurrent]       = useState(0);
   const [localAnswers, setLocalAnswers] = useState({});
   const [submitting, setSubmitting]     = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [loading, setLoading]           = useState(true);
 
   // This student's graded record for the topic: every attempt so far, and
@@ -82,6 +83,7 @@ export default function IndependentActivityPage() {
 
   const handleSubmitAll = async () => {
     setSubmitting(true);
+    setSubmitError('');
     try {
       const payload = {
         moduleId,
@@ -103,7 +105,7 @@ export default function IndependentActivityPage() {
       if (err?.response?.status === 409) {
         setRecord({ ...err.response.data, locked: true });
       } else {
-        console.error(err);
+        setSubmitError(err.response?.data?.message || 'Could not submit your answers. Please try again.');
       }
     } finally {
       setSubmitting(false);
@@ -191,6 +193,7 @@ export default function IndependentActivityPage() {
       </div>
 
       {/* Navigation */}
+      {submitError && <div className="comic-card" role="alert" style={{ background: 'var(--red-soft)', marginTop: '1rem' }}>{submitError}</div>}
       <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
         <button className="btn btn-outline" disabled={current === 0} onClick={() => setCurrent(current - 1)}>
           <ArrowLeft size={15} /> Prev

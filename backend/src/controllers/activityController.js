@@ -2,7 +2,9 @@ import Activity from '../models/Activity.js';
 import Submission from '../models/Submission.js';
 import Progress from '../models/Progress.js';
 import Module from '../models/Module.js';
-import { denyIfLocked } from '../utils/release.js';
+import { denyIfLocked, isTeacher } from '../utils/release.js';
+import { questionContent } from '../utils/contentValidation.js';
+import { activitySnapshot } from '../utils/activitySnapshot.js';
 import { emitStatusChange } from '../realtime/index.js';
 
 // @desc    Get all activities for a specific module
@@ -27,8 +29,8 @@ export const getActivities = async (req, res, next) => {
         }
 
         const activities = await Activity.find(filter)
-            .sort({ order: 1 }) // Sort by order in ascending order
-            .select('-correctAnswer -explanation'); // Exclude the correctAnswer and explanation fields
+            .sort({ order: 1, _id: 1 })
+            .select(isTeacher(req.user) ? '' : '-correctAnswer -explanation');
         res.json(activities);
     } catch (err) {
         next(err);
@@ -49,6 +51,9 @@ export const submitAnswers = async (req, res, next) => {
         }
         if (!Array.isArray(answers) || answers.length === 0) {
             return res.status(400).json({ message: 'answers must be a non-empty array' });
+        }
+        if (isPractice !== undefined && typeof isPractice !== 'boolean') {
+            return res.status(400).json({ message: 'isPractice must be true or false' });
         }
 
         // A locked topic cannot be answered, even by posting straight to the API
@@ -85,8 +90,13 @@ export const submitAnswers = async (req, res, next) => {
             }
         }
 
-        const activityIds = answers.map(a => a.activityId);
-        const activities = await Activity.find({ _id: { $in: activityIds } });
+        const activityIds = answers.map(a => a?.activityId);
+        const activities = await Activity.find({ moduleId, isPractice: isPractice === true });
+        const allowed = new Set(activities.map(a => String(a._id)));
+        if (new Set(activityIds).size !== activityIds.length || activityIds.some(id => !allowed.has(id)) ||
+            (!isPractice && activityIds.length !== activities.length)) {
+            return res.status(400).json({ message: 'The question set changed or is incomplete. Reload the lesson and answer each question once.' });
+        }
 
         const activityMap = {};
         activities.forEach((a) => {
@@ -112,6 +122,7 @@ export const submitAnswers = async (req, res, next) => {
                 givenAnswer: answer.givenAnswer,
                 isCorrect: correct,
                 pointsEarned,
+                activitySnapshot: activitySnapshot(activity),
             };
         }).filter(Boolean); // Remove nulls
 
@@ -218,7 +229,10 @@ export const submitAnswers = async (req, res, next) => {
 
 export const createActivity = async (req, res, next) => {
     try {
-        const activity = await Activity.create(req.body);
+        const content = questionContent(req.body);
+        const module = await Module.findById(req.body.moduleId);
+        if (!module) return res.status(404).json({ message: 'Module not found' });
+        const activity = await Activity.create({ ...content, moduleId: module._id });
         res.status(201).json(activity);
     } catch (err) {
         next(err);
@@ -231,15 +245,20 @@ export const createActivity = async (req, res, next) => {
 
 export const updateActivity = async (req, res, next) => {
     try {
-        const activity = await Activity.findByIdAndUpdate(req.params.id, req.body,
-            { 
-                new: true,
-                runValidators: true,
-
-            });
-
-            if (!activity) return res.status(404).json({ message: 'Activity not found' });
-            res.json(activity);
+        const activity = await Activity.findById(req.params.id);
+        if (!activity) return res.status(404).json({ message: 'Activity not found' });
+        // An existing question keeps its lesson and identity for attempt history.
+        const content = questionContent({ ...activity.toObject(), ...req.body });
+        // Legacy attempts predate snapshots. Capture the original question
+        // before changing it, without altering scores, attempts or progress.
+        await Submission.updateMany(
+            { answers: { $elemMatch: { activityId: activity._id, activitySnapshot: { $exists: false } } } },
+            { $set: { 'answers.$[answer].activitySnapshot': activitySnapshot(activity) } },
+            { arrayFilters: [{ 'answer.activityId': activity._id, 'answer.activitySnapshot': { $exists: false } }], timestamps: false }
+        );
+        Object.assign(activity, content);
+        await activity.save();
+        res.json(activity);
     } catch (err) {
         next(err);
     }
@@ -251,12 +270,36 @@ export const updateActivity = async (req, res, next) => {
 
 export const deleteActivity = async (req, res, next) => {
     try {
-        const activity = await Activity.findByIdAndDelete(req.params.id);
+        const activity = await Activity.findById(req.params.id);
         if (!activity) return res.status(404).json({ message: 'Activity not found' });
+        if (await Submission.exists({ 'answers.activityId': activity._id })) {
+            return res.status(409).json({ message: 'Questions with student submissions cannot be deleted' });
+        }
+        await activity.deleteOne();
         res.json({ message: 'Activity deleted successfully' });
     } catch (err) {
         next(err);
     }
+};
+
+// Store the full permutation in one document-level update per question. bulkWrite
+// only runs after checking every id belongs to this lesson, with no omissions.
+export const reorderActivities = async (req, res, next) => {
+    try {
+        const { moduleId, activityIds } = req.body;
+        const module = await Module.findById(moduleId);
+        if (!module) return res.status(404).json({ message: 'Module not found' });
+        const activities = await Activity.find({ moduleId }).select('_id');
+        const existing = new Set(activities.map(a => String(a._id)));
+        if (!Array.isArray(activityIds) || activityIds.length !== existing.size ||
+            new Set(activityIds).size !== existing.size || activityIds.some(id => !existing.has(id))) {
+            return res.status(400).json({ message: 'Include every lesson question exactly once' });
+        }
+        if (activityIds.length) await Activity.bulkWrite(activityIds.map((id, order) => ({
+            updateOne: { filter: { _id: id, moduleId }, update: { $set: { order } } },
+        })));
+        res.json({ message: 'Question order saved' });
+    } catch (err) { next(err); }
 };
 
 // Helper function

@@ -5,6 +5,7 @@ import {
   createActivity,
   updateActivity,
   deleteActivity,
+  reorderActivities,
 } from '../controllers/activityController.js';
 import { protect, teacherOnly } from '../middleware/authMiddleware.js';
 
@@ -16,6 +17,7 @@ router.post('/submit', protect, submitAnswers);
 
 // Authoring — teachers only
 router.post('/',       protect, teacherOnly, createActivity);
+router.put('/reorder', protect, teacherOnly, reorderActivities);
 router.put('/:id',     protect, teacherOnly, updateActivity);
 router.delete('/:id',  protect, teacherOnly, deleteActivity);
 

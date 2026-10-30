@@ -66,7 +66,7 @@ export default function CorrectAnswersPage() {
 
             {/* Points */}
             <div style={styles.points}>
-              {item.pointsEarned} / {item.pointsEarned + (item.isCorrect ? 0 : 1)} pts
+              {item.pointsEarned} / {item.points ?? (item.pointsEarned + (item.isCorrect ? 0 : 1))} pts
             </div>
           </div>
         ))}

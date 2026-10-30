@@ -23,6 +23,7 @@ export default function RetryPage() {
   const [localAnswers, setLocalAnswers] = useState({});
   const [current, setCurrent]           = useState(0);
   const [submitting, setSubmitting]     = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [loading, setLoading]           = useState(true);
   const [record, setRecord]             = useState(null);
 
@@ -67,6 +68,7 @@ export default function RetryPage() {
 
   const handleSubmit = async () => {
     setSubmitting(true);
+    setSubmitError('');
     try {
       const payload = {
         moduleId,
@@ -81,7 +83,7 @@ export default function RetryPage() {
       dispatch(setSubmissionResult(data));
       navigate('/feedback');
     } catch (err) {
-      console.error(err);
+      setSubmitError(err.response?.data?.message || 'Could not submit your answers. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -157,6 +159,7 @@ export default function RetryPage() {
       </div>
 
       {/* Navigation */}
+      {submitError && <div className="comic-card" role="alert" style={{ background: 'var(--red-soft)', marginTop: '1rem' }}>{submitError}</div>}
       <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
         <button className="btn btn-outline" disabled={current === 0} onClick={() => setCurrent(current - 1)}><ArrowLeft size={15} /> Prev</button>
         {current < total - 1 && (

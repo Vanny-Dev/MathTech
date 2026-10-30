@@ -10,7 +10,7 @@ const ExampleSchema = new mongoose.Schema(
 
 const ModuleSchema = new mongoose.Schema(
     {
-        title: { 
+        title: {
             type: String,
             required: true,
         },
@@ -56,6 +56,8 @@ const ModuleSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        // Stable identity for seeded lessons, even after a teacher renames one.
+        seedKey: String,
 
         // When students may open this topic.
         // null        -> LOCKED, not scheduled yet (the default for new topics)
@@ -75,4 +77,4 @@ const ModuleSchema = new mongoose.Schema(
 
 export default mongoose.model('Module', ModuleSchema);
 
-    
+

@@ -129,7 +129,7 @@ export const getCorrectAnswers = async (req, res, next) => {
     activities.forEach((a) => { activityMap[a._id.toString()] = a; });
 
     const result = submission.answers.map((ans) => {
-      const activity = activityMap[ans.activityId.toString()];
+      const activity = ans.activitySnapshot || activityMap[ans.activityId.toString()];
       return {
         activityId:    ans.activityId,
         question:      activity?.question,
@@ -139,6 +139,7 @@ export const getCorrectAnswers = async (req, res, next) => {
         correctAnswer: activity?.correctAnswer,
         isCorrect:     ans.isCorrect,
         pointsEarned:  ans.pointsEarned,
+        points:        activity?.points,
         explanation:   activity?.explanation,
         comic:         activity?.comic,
       };
@@ -166,7 +167,7 @@ export const getIncorrectAnswers = async (req, res, next) => {
     activities.forEach((a) => { activityMap[a._id.toString()] = a; });
 
     const result = incorrectAnswers.map((ans) => {
-      const activity = activityMap[ans.activityId.toString()];
+      const activity = ans.activitySnapshot || activityMap[ans.activityId.toString()];
       return {
         activityId:    ans.activityId,
         question:      activity?.question,

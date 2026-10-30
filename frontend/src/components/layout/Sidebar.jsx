@@ -33,6 +33,7 @@ const studentNav = [
 ];
 
 const teacherNav = [
+  { icon: BookText, label: 'Lessons & Activities', path: '/teacher/content', section: null },
   { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', section: null },
   { icon: Users, label: 'Students', path: '/teacher/students', section: null },
   { icon: Monitor, label: 'Monitor', path: '/teacher/monitor', section: null },

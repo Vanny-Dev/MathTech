@@ -24,7 +24,7 @@ export default function TeacherSchedule() {
         setModules(data);
         setDrafts(Object.fromEntries(data.map((m) => [m._id, toInputValue(m.releaseDate)])));
       })
-      .catch(console.error)
+      .catch((err) => setNotice({ type: 'err', text: err.response?.data?.message || 'Could not load the schedule. Please reload to try again.' }))
       .finally(() => setLoading(false));
 
   useEffect(() => { load(); }, []);
@@ -62,11 +62,10 @@ export default function TeacherSchedule() {
 
       <div className="chalk-card" style={{ maxWidth: '820px', marginBottom: '1.25rem' }}>
         <p style={{ fontFamily: 'Nunito, sans-serif', lineHeight: 1.7 }}>
-          <strong>Every topic starts locked.</strong> Students can see it and its
-          countdown, but the lesson and quiz stay closed — enforced on the server,
-          not just hidden in the interface. Pick a date and Save to schedule a
-          topic, or press Open now to release it immediately. Your choice is
-          saved and is not reset when the server restarts.
+          <strong>New lessons start unpublished.</strong> Choose a date and press
+          Publish & schedule, or use Publish & open now to release a draft immediately.
+          Published lessons appear in the student topic list with a countdown until
+          their release date. Lock clears the date and closes access to the content.
         </p>
       </div>
 
@@ -124,16 +123,16 @@ export default function TeacherSchedule() {
                     onClick={() => save(m._id, fromInputValue(drafts[m._id]), 'schedule')}
                     title="Save the chosen date"
                   >
-                    <Save size={14} /> {busy ? 'Saving...' : 'Save'}
+                    <Save size={14} /> {busy ? 'Saving...' : m.isPublished ? 'Save schedule' : 'Publish & schedule'}
                   </button>
                   <button
                     className="btn btn-green"
                     style={s.btn}
-                    disabled={busy || released}
+                    disabled={busy || (released && m.isPublished)}
                     onClick={() => save(m._id, nowIso(), 'open')}
                     title="Release this topic to students right now"
                   >
-                    <Zap size={14} /> Open now
+                    <Zap size={14} /> {m.isPublished ? 'Open now' : 'Publish & open now'}
                   </button>
                   <button
                     className="btn btn-outline"
@@ -148,8 +147,7 @@ export default function TeacherSchedule() {
 
                 {m.isPublished === false && (
                   <div style={s.warn}>
-                    This module is a draft. Students will not see it even after the release
-                    date passes until it is published.
+                    This lesson is unpublished. Saving a schedule or opening it now will publish it.
                   </div>
                 )}
               </div>

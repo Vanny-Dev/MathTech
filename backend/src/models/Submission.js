@@ -9,6 +9,8 @@ const AnswerSchema = new mongoose.Schema(
         givenAnswer: mongoose.Schema.Types.Mixed,
         isCorrect: Boolean,
         pointsEarned: Number,
+        // Frozen question content keeps past feedback intact after authoring.
+        activitySnapshot: mongoose.Schema.Types.Mixed,
     }
 );
 

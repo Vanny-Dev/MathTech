@@ -1,5 +1,6 @@
 import Module from '../models/Module.js';
 import { isReleased, isTeacher, denyIfLocked } from '../utils/release.js';
+import { lessonContent } from '../utils/contentValidation.js';
 
 // Shape a module for the module list. Students always learn the release date
 // (so the UI can show a countdown) but never the content of a locked topic.
@@ -105,7 +106,7 @@ export const getLesson = async (req, res, next) => {
 // @access  Private (Teacher only)
 export const createModule = async (req, res, next) => {
   try {
-    const module = await Module.create(req.body);
+    const module = await Module.create({ ...lessonContent(req.body, true), isPublished: false, releaseDate: null });
     res.status(201).json(module);
   } catch (err) {
     next(err);
@@ -117,7 +118,7 @@ export const createModule = async (req, res, next) => {
 // @access  Private (Teacher only)
 export const updateModule = async (req, res, next) => {
   try {
-    const module = await Module.findByIdAndUpdate(req.params.id, req.body, {
+    const module = await Module.findByIdAndUpdate(req.params.id, { $set: lessonContent(req.body) }, {
       new: true,
       runValidators: true,
     });
@@ -129,7 +130,7 @@ export const updateModule = async (req, res, next) => {
 };
 
 // @desc    Schedule when a topic becomes available to students.
-//          Send { releaseDate: null } to remove the schedule (open immediately).
+//          A date publishes the lesson; null clears the schedule and locks it.
 // @route   PUT /api/modules/:id/release
 // @access  Private (Teacher only)
 export const setReleaseDate = async (req, res, next) => {
@@ -147,7 +148,7 @@ export const setReleaseDate = async (req, res, next) => {
 
     const module = await Module.findByIdAndUpdate(
       req.params.id,
-      { releaseDate: value },
+      { $set: { releaseDate: value, ...(value ? { isPublished: true } : {}) } },
       { new: true, runValidators: true }
     ).select('title releaseDate isPublished');
 

@@ -37,6 +37,7 @@ import TeacherDashboard from '../pages/Teacher/TeacherDashboard.jsx';
 import TeacherStudents  from '../pages/Teacher/TeacherStudents.jsx';
 import TeacherMonitor   from '../pages/Teacher/TeacherMonitor.jsx';
 import TeacherSchedule  from '../pages/Teacher/TeacherSchedule.jsx';
+import TeacherContent from '../pages/Teacher/TeacherContent.jsx';
 import StudentDetail    from '../pages/Teacher/StudentDetail.jsx';
 
 // Guards
@@ -102,6 +103,7 @@ export default function AppRouter() {
       <Route path="/about/references" element={<PrivateRoute><MainLayout><ReferencesPage /></MainLayout></PrivateRoute>} />
 
       {/* Teacher routes */}
+      <Route path="/teacher/content" element={<TeacherRoute><MainLayout><TeacherContent /></MainLayout></TeacherRoute>} />
       <Route path="/teacher/dashboard"                        element={<TeacherRoute><MainLayout><TeacherDashboard /></MainLayout></TeacherRoute>} />
       <Route path="/teacher/students"                         element={<TeacherRoute><MainLayout><TeacherStudents /></MainLayout></TeacherRoute>} />
       <Route path="/teacher/monitor"                          element={<TeacherRoute><MainLayout><TeacherMonitor /></MainLayout></TeacherRoute>} />

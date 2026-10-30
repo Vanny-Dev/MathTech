@@ -85,6 +85,9 @@ export default function TeacherDashboard() {
 
       {/* Quick actions */}
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <button className="btn btn-teal" onClick={() => navigate('/teacher/content')}>
+          <ClipboardList size={16} /> Manage Lessons & Activities <ArrowRight size={15} />
+        </button>
         <button className="btn btn-primary" onClick={() => navigate(`/teacher/monitor?moduleId=${selected}`)}>
           <ClipboardList size={16} /> Monitor Students <ArrowRight size={15} />
         </button>
